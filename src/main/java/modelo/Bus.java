@@ -1,31 +1,30 @@
 package modelo;
 
 public class Bus {
-
-    private Integer idBus;
+    private int idBus;
     private String placa;
-    private String codigoUnidad;
+    private String numeroUnidad; // Corresponde a codigo_unidad de la BD
     private String modelo;
-    private Integer capacidad;
+    private int capacidad;
     private String estado;
 
     public Bus() {
     }
 
-    public Bus(Integer idBus, String placa, String codigoUnidad, String modelo, Integer capacidad, String estado) {
+    public Bus(int idBus, String placa, String numeroUnidad, String modelo, int capacidad, String estado) {
         this.idBus = idBus;
         this.placa = placa;
-        this.codigoUnidad = codigoUnidad;
+        this.numeroUnidad = numeroUnidad;
         this.modelo = modelo;
         this.capacidad = capacidad;
         this.estado = estado;
     }
 
-    public Integer getIdBus() {
+    public int getIdBus() {
         return idBus;
     }
 
-    public void setIdBus(Integer idBus) {
+    public void setIdBus(int idBus) {
         this.idBus = idBus;
     }
 
@@ -37,12 +36,12 @@ public class Bus {
         this.placa = placa;
     }
 
-    public String getCodigoUnidad() {
-        return codigoUnidad;
+    public String getNumeroUnidad() {
+        return numeroUnidad;
     }
 
-    public void setCodigoUnidad(String codigoUnidad) {
-        this.codigoUnidad = codigoUnidad;
+    public void setNumeroUnidad(String numeroUnidad) {
+        this.numeroUnidad = numeroUnidad;
     }
 
     public String getModelo() {
@@ -53,11 +52,11 @@ public class Bus {
         this.modelo = modelo;
     }
 
-    public Integer getCapacidad() {
+    public int getCapacidad() {
         return capacidad;
     }
 
-    public void setCapacidad(Integer capacidad) {
+    public void setCapacidad(int capacidad) {
         this.capacidad = capacidad;
     }
 
