@@ -37,7 +37,7 @@ public class LoginController implements ActionListener {
                     "Bienvenido a la Central de Despacho: " + u.getNombreUsuario(),
                     "Acceso Concedido", JOptionPane.INFORMATION_MESSAGE);
             view.dispose();
-            new MonitoreoFlotaView().setVisible(true);
+            new vista.MainCentralFrame().setVisible(true);
         } else {
             JOptionPane.showMessageDialog(view,
                     "Credenciales incorrectas o usuario no activo.",
