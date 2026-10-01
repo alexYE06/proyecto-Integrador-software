@@ -13,15 +13,16 @@ public class UsuarioDAO {
 
     /**
      * Valida las credenciales de inicio de sesión del operador o administrador.
-     * Retorna el objeto Usuario si las credenciales son correctas y está 'Activo', o null si falla.
+     * Retorna el objeto Usuario si las credenciales son correctas y está 'Activo',
+     * o null si falla.
      */
     public Usuario validarAcceso(String nombreUsuario, String contrasena) {
         String sql = "SELECT id_usuario, nombre_usuario, contrasena, rol, estado "
-                   + "FROM usuario "
-                   + "WHERE nombre_usuario = ? AND contrasena = ? AND estado = 'Activo'";
+                + "FROM usuario "
+                + "WHERE nombre_usuario = ? AND contrasena = ? AND estado = 'Activo'";
 
         try (Connection conn = ConexionBD.obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, nombreUsuario);
             ps.setString(2, contrasena);
@@ -51,8 +52,8 @@ public class UsuarioDAO {
         String sql = "SELECT id_usuario, nombre_usuario, contrasena, rol, estado FROM usuario";
 
         try (Connection conn = ConexionBD.obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Usuario u = new Usuario();
@@ -69,12 +70,14 @@ public class UsuarioDAO {
         return lista;
     }
 
-    // Prueba rápida para verificar que UsuarioDAO valida correctamente con los datos de prueba
+    // Prueba rápida para verificar que UsuarioDAO valida correctamente con los
+    // datos de prueba
     public static void main(String[] args) {
         UsuarioDAO dao = new UsuarioDAO();
         Usuario u = dao.validarAcceso("operador1", "op123");
         if (u != null) {
-            System.out.println("Login exitoso en UsuarioDAO! Bienvenido: " + u.getNombreUsuario() + " | Rol: " + u.getRol());
+            System.out.println(
+                    "Login exitoso en UsuarioDAO! Bienvenido: " + u.getNombreUsuario() + " | Rol: " + u.getRol());
         } else {
             System.out.println("Credenciales incorrectas o usuario no encontrado.");
         }
