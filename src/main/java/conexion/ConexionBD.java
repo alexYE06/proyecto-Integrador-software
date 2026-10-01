@@ -6,14 +6,23 @@ import java.sql.SQLException;
 
 public class ConexionBD {
 
-    private static final String URL = "jdbc:mysql://localhost:3307/sistema_alertas?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/sistema_alertas?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=5000&socketTimeout=10000";
     private static final String USER = "root";
-    private static final String PASSWORD = "Pickford01.8";
 
     public static Connection obtenerConexion() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            // 1. Probar con contraseña 123456 (configurada en el MySQL / MariaDB local)
+            try {
+                return DriverManager.getConnection(URL, USER, "123456");
+            } catch (SQLException e1) {
+                // 2. Si falla por contraseña, probar con contraseña vacía (estándar alternativo)
+                try {
+                    return DriverManager.getConnection(URL, USER, "");
+                } catch (SQLException e2) {
+                    throw e1;
+                }
+            }
         } catch (ClassNotFoundException e) {
             throw new SQLException("Error: No se encontró el driver de MySQL Connector/J.", e);
         }
