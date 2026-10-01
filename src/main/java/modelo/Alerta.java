@@ -1,23 +1,21 @@
 package modelo;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 public class Alerta {
-
-    private Integer idAlerta;
-    private Integer idConductor;
-    private Integer idBus;
-    private Integer idOperador;
-    private LocalDateTime fechaHora;
+    private int idAlerta;
+    private int idConductor;
+    private int idBus;
+    private Integer idOperador; // Integer para permitir valores nulos al crearse
+    private Timestamp fechaHora;
     private String tipoActivacion;
     private String estado;
     private String descripcion;
 
-    public Alerta() {
-    }
+    public Alerta() {}
 
-    public Alerta(Integer idAlerta, Integer idConductor, Integer idBus, Integer idOperador,
-            LocalDateTime fechaHora, String tipoActivacion, String estado, String descripcion) {
+    public Alerta(int idAlerta, int idConductor, int idBus, Integer idOperador, 
+                Timestamp fechaHora, String tipoActivacion, String estado, String descripcion) {
         this.idAlerta = idAlerta;
         this.idConductor = idConductor;
         this.idBus = idBus;
@@ -28,68 +26,27 @@ public class Alerta {
         this.descripcion = descripcion;
     }
 
-    public Integer getIdAlerta() {
-        return idAlerta;
-    }
+    public int getIdAlerta() { return idAlerta; }
+    public void setIdAlerta(int idAlerta) { this.idAlerta = idAlerta; }
 
-    public void setIdAlerta(Integer idAlerta) {
-        this.idAlerta = idAlerta;
-    }
+    public int getIdConductor() { return idConductor; }
+    public void setIdConductor(int idConductor) { this.idConductor = idConductor; }
 
-    public Integer getIdConductor() {
-        return idConductor;
-    }
+    public int getIdBus() { return idBus; }
+    public void setIdBus(int idBus) { this.idBus = idBus; }
 
-    public void setIdConductor(Integer idConductor) {
-        this.idConductor = idConductor;
-    }
+    public Integer getIdOperador() { return idOperador; }
+    public void setIdOperador(Integer idOperador) { this.idOperador = idOperador; }
 
-    public Integer getIdBus() {
-        return idBus;
-    }
+    public Timestamp getFechaHora() { return fechaHora; }
+    public void setFechaHora(Timestamp fechaHora) { this.fechaHora = fechaHora; }
 
-    public void setIdBus(Integer idBus) {
-        this.idBus = idBus;
-    }
+    public String getTipoActivacion() { return tipoActivacion; }
+    public void setTipoActivacion(String tipoActivacion) { this.tipoActivacion = tipoActivacion; }
 
-    public Integer getIdOperador() {
-        return idOperador;
-    }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
-    public void setIdOperador(Integer idOperador) {
-        this.idOperador = idOperador;
-    }
-
-    public LocalDateTime getFechaHora() {
-        return fechaHora;
-    }
-
-    public void setFechaHora(LocalDateTime fechaHora) {
-        this.fechaHora = fechaHora;
-    }
-
-    public String getTipoActivacion() {
-        return tipoActivacion;
-    }
-
-    public void setTipoActivacion(String tipoActivacion) {
-        this.tipoActivacion = tipoActivacion;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 }
