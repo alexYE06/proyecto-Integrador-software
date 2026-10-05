@@ -11,6 +11,28 @@ import java.util.List;
 
 public class BusDAO {
 
+    public List<Bus> listarActivos() throws SQLException {
+        List<Bus> buses = new ArrayList<>();
+        String sql = "SELECT id_bus, placa, codigo_unidad, modelo, capacidad, estado "
+                + "FROM bus WHERE estado = 'Activo' ORDER BY codigo_unidad";
+
+        try (Connection conn = ConexionBD.obtenerConexion();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Bus bus = new Bus();
+                bus.setIdBus(rs.getInt("id_bus"));
+                bus.setPlaca(rs.getString("placa"));
+                bus.setNumeroUnidad(rs.getString("codigo_unidad"));
+                bus.setModelo(rs.getString("modelo"));
+                bus.setCapacidad(rs.getInt("capacidad"));
+                bus.setEstado(rs.getString("estado"));
+                buses.add(bus);
+            }
+        }
+        return buses;
+    }
+
     /**
      * Lista todos los buses registrados en la flota de Carmen de la Punta S.A.
      */

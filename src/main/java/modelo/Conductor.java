@@ -80,5 +80,8 @@ public class Conductor {
         this.estado = estado;
     }
 
-    
+    @Override
+    public String toString() {
+        return nombres + " " + apellidos + " (DNI " + dni + ")";
+    }
 }
