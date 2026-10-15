@@ -54,3 +54,17 @@ src/main/java/
 ├── conexion/
 ├── controlador/
 └── vista/
+```
+
+## Formularios de la central
+
+Desde el menú lateral de la central se puede abrir:
+
+- **Registrar alerta:** selecciona un conductor y una unidad activos, permite asignar
+  opcionalmente un operador y guarda el tipo de activación, estado y descripción en
+  la tabla `alerta`.
+- **Registrar operador:** guarda el perfil en `operador` y crea su cuenta con rol
+  `Operador` en `usuario` dentro de una única transacción.
+
+Para registrar una alerta deben existir conductores y buses con estado `Activo`.
+Los dos formularios utilizan la conexión JDBC configurada en `ConexionBD`.
