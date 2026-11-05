@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="Reporte_01_Incidencias_SAT_CARMEN" 
+              language="java" 
+              pageWidth="842" 
+              pageHeight="595" 
+              orientation="Landscape" 
+              columnWidth="786" 
+              leftMargin="28" 
+              rightMargin="28" 
+              topMargin="22" 
+              bottomMargin="22" 
+              whenNoDataType="AllSectionsNoDetail">
+              
+    <queryString language="SQL">
+        <![CDATA[
+        SELECT
+            a.id_alerta AS id_alerta,
+            DATE_FORMAT(a.fecha_hora, '%d/%m/%Y %H:%i') AS fecha_hora,
+            CONCAT(c.nombres, ' ', c.apellidos) AS conductor,
+            b.codigo_unidad AS unidad,
+            a.tipo_activacion AS tipo_alerta,
+            CASE
+                WHEN g.latitud IS NOT NULL AND g.longitud IS NOT NULL
+                  THEN CONCAT(ROUND(g.latitud, 5), ', ', ROUND(g.longitud, 5))
+                ELSE 'Sin posición GPS'
+            END AS ubicacion,
+            a.estado AS estado
+        FROM alerta a
+        INNER JOIN conductor c ON c.id_conductor = a.id_conductor
+        INNER JOIN bus b ON b.id_bus = a.id_bus
+        LEFT JOIN telemetria_gps g
+            ON g.id_telemetria = (
+                SELECT tg.id_telemetria
+                FROM telemetria_gps tg
+                WHERE tg.id_alerta = a.id_alerta
+                ORDER BY tg.fecha_hora DESC, tg.id_telemetria DESC
+                LIMIT 1
+            )
+        ORDER BY a.fecha_hora DESC, a.id_alerta DESC
+        ]]>
+    </queryString>
+
+    <field name="id_alerta" class="java.lang.Integer"/>
+    <field name="fecha_hora" class="java.lang.String"/>
+    <field name="conductor" class="java.lang.String"/>
+    <field name="unidad" class="java.lang.String"/>
+    <field name="tipo_alerta" class="java.lang.String"/>
+    <field name="ubicacion" class="java.lang.String"/>
+    <field name="estado" class="java.lang.String"/>
+
+    <title>
+        <band height="169" splitType="Stretch">
+            <rectangle radius="11">
+                <reportElement x="0" y="0" width="786" height="99" backcolor="#142033" mode="Opaque">
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                </reportElement>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="0" y="0" width="6" height="99" backcolor="#D41C3C" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <image hAlign="Center" vAlign="Middle" onErrorType="Icon">
+                <reportElement x="19" y="9" width="73" height="79"/>
+                <imageExpression><![CDATA["logo_sat_carmen.png"]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="104" y="13" width="544" height="16" forecolor="#B8CBDC"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[SAT-CARMEN   |   CARMEN DE LA PUNTA S.A.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="104" y="31" width="545" height="34" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="21" isBold="true"/>
+                </textElement>
+                <text><![CDATA[REPORTE DE INCIDENCIAS]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="105" y="66" width="544" height="18" forecolor="#D9E8F2"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9"/>
+                </textElement>
+                <text><![CDATA[Sistema de alerta en tiempo real  /  Central de despacho]]></text>
+            </staticText>
+            <rectangle radius="10">
+                <reportElement x="667" y="15" width="103" height="26" backcolor="#38475A" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="672" y="18" width="93" height="18" forecolor="#FFF2F5"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[REPORTE 01]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="649" y="54" width="121" height="13" forecolor="#E6BEC9"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[CONTROL OPERATIVO]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="651" y="69" width="119" height="14" forecolor="#D8E4EC"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <text><![CDATA[Documento interno]]></text>
+            </staticText>
+
+            <!-- Bloques informativos -->
+            <rectangle radius="8">
+                <reportElement x="0" y="109" width="250" height="52" backcolor="#F4F7FA" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="0" y="109" width="4" height="52" backcolor="#D41C3C" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="15" y="117" width="221" height="14" forecolor="#728297"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[TIPO DE REPORTE]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="15" y="132" width="223" height="22" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Registro de alertas e incidentes]]></text>
+            </staticText>
+
+            <rectangle radius="8">
+                <reportElement x="259" y="109" width="252" height="52" backcolor="#F4F7FA" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="259" y="109" width="4" height="52" backcolor="#D41C3C" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="274" y="117" width="223" height="14" forecolor="#728297"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[BASE DE DATOS]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="274" y="132" width="225" height="22" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[sistema_alertas]]></text>
+            </staticText>
+
+            <rectangle radius="8">
+                <reportElement x="520" y="109" width="266" height="52" backcolor="#F4F7FA" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="520" y="109" width="4" height="52" backcolor="#D41C3C" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="535" y="117" width="237" height="14" forecolor="#728297"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[FECHA DE EMISIÓN]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="535" y="132" width="240" height="22" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd/MM/yyyy  HH:mm").format(new java.util.Date())]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="54" splitType="Stretch">
+            <staticText>
+                <reportElement x="1" y="1" width="26" height="17" forecolor="#D41C3C"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[01]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="30" y="1" width="325" height="17" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[DETALLE DE INCIDENCIAS]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="440" y="2" width="344" height="16" forecolor="#728297"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <text><![CDATA[Registros ordenados del más reciente al más antiguo]]></text>
+            </staticText>
+            <rectangle radius="5">
+                <reportElement x="0" y="23" width="786" height="30" backcolor="#1C2D43" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="0" y="23" width="5" height="30" backcolor="#D41C3C" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="14" y="29" width="43" height="18" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ID]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="62" y="29" width="113" height="18" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[FECHA Y HORA]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="181" y="29" width="126" height="18" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[CONDUCTOR]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="314" y="29" width="69" height="18" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[UNIDAD]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="389" y="29" width="154" height="18" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[TIPO DE ALERTA]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="550" y="29" width="143" height="18" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[UBICACIÓN GPS]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="703" y="29" width="73" height="18" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ESTADO]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="54" splitType="Stretch">
+            <rectangle radius="5">
+                <reportElement x="0" y="2" width="786" height="49" backcolor="#F6F9FC" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <rectangle radius="7">
+                <reportElement x="13" y="13" width="44" height="27" backcolor="#E5EDF2" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement x="17" y="17" width="37" height="20" forecolor="#1C2D43"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{id_alerta}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="62" y="9" width="113" height="39" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{fecha_hora}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement x="181" y="8" width="125" height="40" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{conductor}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="314" y="9" width="68" height="38" forecolor="#1C2D43"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{unidad}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement x="389" y="8" width="153" height="39" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{tipo_alerta}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement x="550" y="8" width="142" height="39" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{ubicacion}]]></textFieldExpression>
+            </textField>
+            <rectangle radius="7">
+                <reportElement x="698" y="13" width="79" height="27" backcolor="#FBE8ED" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement x="700" y="16" width="74" height="20" forecolor="#A50F2C"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{estado}]]></textFieldExpression>
+            </textField>
+            <line>
+                <reportElement x="8" y="53" width="770" height="1" forecolor="#DDE5EC"/>
+                <graphicElement>
+                    <pen lineWidth="0.5"/>
+                </graphicElement>
+            </line>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="39" splitType="Stretch">
+            <line>
+                <reportElement x="0" y="1" width="786" height="1" forecolor="#CBD8E3"/>
+                <graphicElement>
+                    <pen lineWidth="1.0"/>
+                </graphicElement>
+            </line>
+            <rectangle>
+                <reportElement x="0" y="9" width="5" height="18" backcolor="#D41C3C" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="12" y="9" width="565" height="17" forecolor="#728297"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[CARMEN DE LA PUNTA S.A.   /   REPORTE INTERNO DE OPERACIONES]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="670" y="9" width="113" height="17" forecolor="#1C2D43"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["PÁGINA " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="83" splitType="Stretch">
+            <rectangle radius="9">
+                <reportElement x="0" y="8" width="786" height="67" backcolor="#FBEDEF" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <rectangle>
+                <reportElement x="0" y="8" width="5" height="67" backcolor="#D41C3C" mode="Opaque"/>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="18" y="14" width="104" height="17" forecolor="#728297"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ALERTAS LISTADAS]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="18" y="30" width="90" height="32" forecolor="#142033"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="24" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+            </textField>
+            <line>
+                <reportElement x="128" y="19" width="1" height="43" forecolor="#ECC8D1"/>
+            </line>
+            <staticText>
+                <reportElement x="145" y="14" width="390" height="17" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[LECTURA DE UBICACIONES]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="145" y="30" width="611" height="18" forecolor="#24354A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9"/>
+                </textElement>
+                <text><![CDATA[Se muestra la última coordenada GPS asociada a cada alerta.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="145" y="49" width="611" height="18" forecolor="#728297"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <text><![CDATA[Si no existe registro geográfico, aparece “Sin posición GPS”.]]></text>
+            </staticText>
+        </band>
+    </summary>
+</jasperReport>

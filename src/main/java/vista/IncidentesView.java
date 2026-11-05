@@ -182,6 +182,14 @@ public class IncidentesView extends JPanel {
         pnlHeaderBtns.setOpaque(false);
         pnlHeaderBtns.add(crearBotonAccion("🔍 Buscar unidad, conductor o placa..."));
         
+        // --- Pegar en pnlHeaderBtns (alrededor de la línea 170 de IncidentesView.java) ---
+        JButton btnGenerarReporte = crearBotonPeligro("📄 Reporte Incidencias (PDF)");
+        btnGenerarReporte.setBackground(new Color(15, 23, 42)); // Tono oscuro institucional
+        btnGenerarReporte.addActionListener(e -> {
+            controlador.ReporteController.generarReporteIncidencias();
+        });
+        pnlHeaderBtns.add(btnGenerarReporte);
+
         JButton btnRegChofer = crearBotonPeligro("+ Registrar Chofer");
         btnRegChofer.setBackground(new Color(16, 185, 129)); // Verde
         btnRegChofer.addActionListener(e -> new RegistrarConductorView().setVisible(true));
