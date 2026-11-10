@@ -27,6 +27,12 @@
             <version>26.7.0</version>
         </dependency>
 
+        <!-- Motor de JasperReports para generar los reportes y PDFs -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.21.3</version>
+        </dependency>
     </dependencies>
 
     <build>

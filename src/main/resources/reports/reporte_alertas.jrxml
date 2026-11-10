@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="reporte_alertas"
+              pageWidth="842"
+              pageHeight="595"
+              orientation="Landscape"
+              columnWidth="802"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20">
+
+    <!-- CONSULTA PRINCIPAL A TU BASE DE DATOS -->
+    <queryString>
+        <![CDATA[
+            SELECT 
+                a.id_alerta,
+                DATE_FORMAT(a.fecha_hora, '%d/%m/%Y %H:%i') AS fecha_hora,
+                CONCAT(c.nombres, ' ', c.apellidos) AS conductor,
+                CONCAT(b.codigo_unidad, ' (', b.placa, ')') AS bus,
+                a.tipo_activacion,
+                a.estado,
+                COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador') AS operador
+            FROM alerta a
+            INNER JOIN conductor c ON a.id_conductor = c.id_conductor
+            INNER JOIN bus b ON a.id_bus = b.id_bus
+            LEFT JOIN operador o ON a.id_operador = o.id_operador
+            ORDER BY a.fecha_hora DESC;
+        ]]>
+    </queryString>
+
+    <!-- COLUMNAS MAPEADAS DESDE EL SQL -->
+    <field name="id_alerta" class="java.lang.Integer"/>
+    <field name="fecha_hora" class="java.lang.String"/>
+    <field name="conductor" class="java.lang.String"/>
+    <field name="bus" class="java.lang.String"/>
+    <field name="tipo_activacion" class="java.lang.String"/>
+    <field name="estado" class="java.lang.String"/>
+    <field name="operador" class="java.lang.String"/>
+
+    <!-- ENCABEZADO PRINCIPAL (TÍTULO) -->
+    <title>
+        <band height="65">
+            <rectangle>
+                <reportElement x="0" y="0" width="802" height="55" backcolor="#1A237E"/>
+                <graphicElement><pen lineWidth="0.0"/></graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="15" y="10" width="480" height="24" forecolor="#FFFFFF"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[SISTEMA DE ALERTAS - REPORTE DE INCIDENCIAS]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="15" y="34" width="300" height="15" forecolor="#B0BEC5"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <text><![CDATA[Historial consolidado de alertas de buses y conductores]]></text>
+            </staticText>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="600" y="18" width="185" height="20" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="10"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <!-- ENCABEZADOS DE LAS COLUMNAS DE LA TABLA -->
+    <columnHeader>
+        <band height="26">
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#283593" x="0" y="0" width="45" height="26" forecolor="#FFFFFF"/>
+                <box><pen lineWidth="0.5" lineColor="#1A237E"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[ID]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#283593" x="45" y="0" width="110" height="26" forecolor="#FFFFFF"/>
+                <box><pen lineWidth="0.5" lineColor="#1A237E"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[Fecha / Hora]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#283593" x="155" y="0" width="170" height="26" forecolor="#FFFFFF"/>
+                <box leftPadding="5"><pen lineWidth="0.5" lineColor="#1A237E"/></box>
+                <textElement verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[Conductor]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#283593" x="325" y="0" width="110" height="26" forecolor="#FFFFFF"/>
+                <box><pen lineWidth="0.5" lineColor="#1A237E"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[Unidad / Placa]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#283593" x="435" y="0" width="120" height="26" forecolor="#FFFFFF"/>
+                <box><pen lineWidth="0.5" lineColor="#1A237E"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[Tipo Activación]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#283593" x="555" y="0" width="95" height="26" forecolor="#FFFFFF"/>
+                <box><pen lineWidth="0.5" lineColor="#1A237E"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[Estado]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#283593" x="650" y="0" width="152" height="26" forecolor="#FFFFFF"/>
+                <box leftPadding="5"><pen lineWidth="0.5" lineColor="#1A237E"/></box>
+                <textElement verticalAlignment="Middle"><font size="10" isBold="true"/></textElement>
+                <text><![CDATA[Operador Asignado]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <!-- DETALLE: FILAS DE DATOS DE LA BASE DE DATOS -->
+    <detail>
+        <band height="22">
+            <textField>
+                <reportElement x="0" y="0" width="45" height="22"/>
+                <box><pen lineWidth="0.25" lineColor="#CFD8DC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{id_alerta}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="45" y="0" width="110" height="22"/>
+                <box><pen lineWidth="0.25" lineColor="#CFD8DC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{fecha_hora}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="155" y="0" width="170" height="22"/>
+                <box leftPadding="6"><pen lineWidth="0.25" lineColor="#CFD8DC"/></box>
+                <textElement verticalAlignment="Middle"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{conductor}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="325" y="0" width="110" height="22"/>
+                <box><pen lineWidth="0.25" lineColor="#CFD8DC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{bus}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="435" y="0" width="120" height="22"/>
+                <box><pen lineWidth="0.25" lineColor="#CFD8DC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{tipo_activacion}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="555" y="0" width="95" height="22"/>
+                <box><pen lineWidth="0.25" lineColor="#CFD8DC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{estado}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="650" y="0" width="152" height="22"/>
+                <box leftPadding="6"><pen lineWidth="0.25" lineColor="#CFD8DC"/></box>
+                <textElement verticalAlignment="Middle"><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$F{operador}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <!-- PIE DE PÁGINA (PAGINACIÓN) -->
+    <pageFooter>
+        <band height="30">
+            <line>
+                <reportElement x="0" y="5" width="802" height="1" forecolor="#B0BEC5"/>
+            </line>
+            <textField>
+                <reportElement x="0" y="10" width="300" height="18" forecolor="#78909C"/>
+                <textElement verticalAlignment="Middle"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Sistema de Alertas - Monitoreo y Auxilio"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="650" y="10" width="110" height="18" forecolor="#78909C"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER} + " de "]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="760" y="10" width="42" height="18" forecolor="#78909C"/>
+                <textElement verticalAlignment="Middle"><font size="8"/></textElement>
+                <textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <!-- RESUMEN AL FINAL DEL REPORTE -->
+    <summary>
+        <band height="35">
+            <rectangle>
+                <reportElement x="0" y="10" width="802" height="24" backcolor="#ECEFF1"/>
+                <graphicElement><pen lineWidth="0.5" lineColor="#CFD8DC"/></graphicElement>
+            </rectangle>
+            <textField>
+                <reportElement x="15" y="12" width="400" height="20"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Total de Alertas registradas en este reporte: " + $V{REPORT_COUNT}]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+</jasperReport>

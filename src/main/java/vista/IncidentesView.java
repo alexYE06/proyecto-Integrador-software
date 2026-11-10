@@ -196,6 +196,12 @@ public class IncidentesView extends JPanel {
         
         JButton btnSimular = crearBotonPeligro("⚠ Simular alerta");
         pnlHeaderBtns.add(btnSimular);
+
+        JButton btnReporte = crearBotonPeligro("📄 Generar Reporte PDF");
+        btnReporte.addActionListener(e -> {
+            controlador.ReporteControlador.generarYMostrarReporte();
+        });
+        pnlHeaderBtns.add(btnReporte);
         
         pnlHeaderBtns.add(crearBotonAccion("App móvil"));
         JButton btnSalir = crearBotonAccion("Salir central");
