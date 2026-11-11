@@ -1,5 +1,5 @@
-CREATE DATABASE sistema_alertas;
-USE sistema_alertas;
+CREATE DATABASE sistema_alertas1;
+USE sistema_alertas1;
 CREATE TABLE usuario (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     nombre_usuario VARCHAR(50) NOT NULL,
@@ -7,6 +7,7 @@ CREATE TABLE usuario (
     rol VARCHAR(30) NOT NULL,
     estado VARCHAR(20) NOT NULL
 );
+
 CREATE TABLE conductor (
     id_conductor INT AUTO_INCREMENT PRIMARY KEY,
     nombres VARCHAR(100) NOT NULL,
@@ -16,6 +17,7 @@ CREATE TABLE conductor (
     licencia VARCHAR(20) NOT NULL,
     estado VARCHAR(20) NOT NULL
 );
+
 CREATE TABLE operador (
     id_operador INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
@@ -26,6 +28,7 @@ CREATE TABLE operador (
     estado VARCHAR(20) NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
+
 CREATE TABLE bus (
     id_bus INT AUTO_INCREMENT PRIMARY KEY,
     placa VARCHAR(10) NOT NULL UNIQUE,
@@ -34,6 +37,7 @@ CREATE TABLE bus (
     capacidad INT,
     estado VARCHAR(20) NOT NULL
 );
+
 CREATE TABLE comisaria (
     id_comisaria INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
@@ -42,6 +46,7 @@ CREATE TABLE comisaria (
     latitud DECIMAL(10,7),
     longitud DECIMAL(10,7)
 );
+
 CREATE TABLE asignacion_turno (
     id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
     id_conductor INT NOT NULL,
@@ -53,6 +58,7 @@ CREATE TABLE asignacion_turno (
     FOREIGN KEY (id_conductor) REFERENCES conductor(id_conductor),
     FOREIGN KEY (id_bus) REFERENCES bus(id_bus)
 );
+
 CREATE TABLE alerta (
     id_alerta INT AUTO_INCREMENT PRIMARY KEY,
     id_conductor INT NOT NULL,
@@ -66,6 +72,7 @@ CREATE TABLE alerta (
     FOREIGN KEY (id_bus) REFERENCES bus(id_bus),
     FOREIGN KEY (id_operador) REFERENCES operador(id_operador)
 );
+
 CREATE TABLE telemetria_gps (
     id_telemetria INT AUTO_INCREMENT PRIMARY KEY,
     id_bus INT NOT NULL,
@@ -77,6 +84,7 @@ CREATE TABLE telemetria_gps (
     FOREIGN KEY (id_bus) REFERENCES bus(id_bus),
     FOREIGN KEY (id_alerta) REFERENCES alerta(id_alerta)
 );
+
 CREATE TABLE evidencia_multimedia (
     id_evidencia INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
@@ -86,6 +94,7 @@ CREATE TABLE evidencia_multimedia (
     descripcion VARCHAR(255),
     FOREIGN KEY (id_alerta) REFERENCES alerta(id_alerta)
 );
+
 CREATE TABLE despacho_auxilio (
     id_despacho INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
@@ -98,6 +107,7 @@ CREATE TABLE despacho_auxilio (
     FOREIGN KEY (id_comisaria) REFERENCES comisaria(id_comisaria),
     FOREIGN KEY (id_operador) REFERENCES operador(id_operador)
 );
+
 CREATE TABLE cerco_preventivo (
     id_cerco INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
@@ -109,6 +119,7 @@ CREATE TABLE cerco_preventivo (
     FOREIGN KEY (id_alerta) REFERENCES alerta(id_alerta),
     FOREIGN KEY (id_comisaria) REFERENCES comisaria(id_comisaria)
 );
+
 CREATE TABLE notificacion (
     id_notificacion INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
@@ -119,5 +130,6 @@ CREATE TABLE notificacion (
     FOREIGN KEY (id_alerta) REFERENCES alerta(id_alerta),
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
+
 SHOW TABLES;
 
