@@ -1,0 +1,29 @@
+# ==============================================================================
+# ARCHIVO DE EJEMPLO DE CONFIGURACIÓN DE BASE DE DATOS LOCAL
+# Proyecto: Sistema de Alertas en Tiempo Real - Carmen de la Punta S.A.
+# ==============================================================================
+# Instrucciones de uso:
+# 1. Copia este archivo y renómbralo como "db.properties" en esta misma carpeta (raíz del proyecto)
+#    o en la carpeta "config/db.properties".
+# 2. Ajusta los valores según la configuración de MySQL en tu equipo de desarrollo.
+# 3. NO subas "db.properties" a Git (ya se encuentra protegido en el .gitignore).
+#
+# Nota de compatibilidad:
+# Si este archivo no existe, la aplicación tomará por defecto los valores del proyecto:
+# Host: localhost, Puerto: 3307, Base de Datos: sistema_alertas, Usuario: root
+# ==============================================================================
+
+# Dirección o host del servidor MySQL (por defecto: localhost)
+db.host=localhost
+
+# Puerto de conexión MySQL (3306 para instalación estándar, 3307 para entornos alternativos como XAMPP/MariaDB)
+db.port=3307
+
+# Nombre de la base de datos
+db.name=sistema_alertas
+
+# Usuario con privilegios en la base de datos (por defecto: root)
+db.user=root
+
+# Contraseña del usuario en tu equipo local
+db.password=123456

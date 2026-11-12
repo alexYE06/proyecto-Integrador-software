@@ -1,1 +1,5 @@
 target/
+
+# Configuración local de base de datos (credenciales privadas)
+db.properties
+config/db.properties
