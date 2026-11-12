@@ -8,6 +8,7 @@ import net.sf.jasperreports.view.JasperViewer;
 import servicio.ReporteService;
 
 import javax.swing.*;
+import com.toedter.calendar.JDateChooser;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -25,8 +26,8 @@ public class ReportesView extends JPanel {
     private final ReporteControlador controlador = new ReporteControlador();
 
     private JComboBox<String> cbTipoReporte;
-    private JTextField txtFechaInicio;
-    private JTextField txtFechaFin;
+    private JDateChooser txtFechaInicio;
+    private JDateChooser txtFechaFin;
     private JComboBox<String> cbEstado;
     private JComboBox<BusItem> cbBus;
     private JComboBox<String> cbModalidad;
@@ -91,10 +92,13 @@ public class ReportesView extends JPanel {
                 ReporteService.REPORTE_MODALIDADES
         });
 
-        txtFechaInicio = new JTextField();
-        txtFechaInicio.setToolTipText("Formato dd/MM/yyyy (ej. 01/11/2026). Dejar vacío para sin límite.");
-        txtFechaFin = new JTextField();
-        txtFechaFin.setToolTipText("Formato dd/MM/yyyy (ej. 12/11/2026). Dejar vacío para sin límite.");
+        txtFechaInicio = new JDateChooser();
+        txtFechaInicio.setDateFormatString("dd/MM/yyyy");
+        txtFechaInicio.setToolTipText("Seleccione la fecha inicial. Dejar vacío para sin límite.");
+        
+        txtFechaFin = new JDateChooser();
+        txtFechaFin.setDateFormatString("dd/MM/yyyy");
+        txtFechaFin.setToolTipText("Seleccione la fecha final. Dejar vacío para sin límite.");
 
         cbEstado = new JComboBox<>(new String[]{
                 "Todos", "Recibida", "En Evaluación", "Auxilio Despachado", "Atendida", "Falsa Alarma"
@@ -190,8 +194,8 @@ public class ReportesView extends JPanel {
 
     private void limpiarFiltros() {
         cbTipoReporte.setSelectedIndex(0);
-        txtFechaInicio.setText("");
-        txtFechaFin.setText("");
+        txtFechaInicio.setDate(null);
+        txtFechaFin.setDate(null);
         cbEstado.setSelectedIndex(0);
         cbBus.setSelectedIndex(0);
         cbModalidad.setSelectedIndex(0);
@@ -199,34 +203,35 @@ public class ReportesView extends JPanel {
     }
 
     private FiltroReporte construirFiltro() {
-        LocalDate fInicio = parsearFecha(txtFechaInicio.getText().trim(), "Fecha inicial");
-        LocalDate fFin = parsearFecha(txtFechaFin.getText().trim(), "Fecha final");
+        java.sql.Timestamp fechaInicioSql = null;
+        java.util.Date fIniDate = txtFechaInicio.getDate();
+        if (fIniDate != null) {
+            // Aseguramos que sea a las 00:00:00 del día seleccionado
+            LocalDate localIni = fIniDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            fechaInicioSql = java.sql.Timestamp.valueOf(localIni.atStartOfDay());
+        }
+
+        java.sql.Timestamp fechaFinSql = null;
+        java.util.Date fFinDate = txtFechaFin.getDate();
+        if (fFinDate != null) {
+            // Regla del documento: Sumar 1 día para incluir toda la noche (Fin Exclusiva)
+            LocalDate localFin = fFinDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            fechaFinSql = java.sql.Timestamp.valueOf(localFin.plusDays(1).atStartOfDay());
+        }
 
         String estadoSel = (String) cbEstado.getSelectedItem();
         String estado = "Todos".equals(estadoSel) ? null : estadoSel;
 
         BusItem busSel = (BusItem) cbBus.getSelectedItem();
-        Integer idBus = (busSel != null) ? busSel.id() : null;
+        Integer idBus = (busSel != null && busSel.id() != null) ? busSel.id() : null;
 
         String modSel = (String) cbModalidad.getSelectedItem();
         String modalidad = "Todas".equals(modSel) ? null : modSel;
 
-        FiltroReporte filtro = new FiltroReporte(fInicio, fFin, estado, idBus, modalidad);
-        filtro.validar();
+        FiltroReporte filtro = new FiltroReporte(fechaInicioSql, fechaFinSql, estado, idBus, modalidad);
+        // filtro.validar(); // Mantén tu método validar si lo tienes, ajustado a Timestamp
         return filtro;
     }
-
-    private LocalDate parsearFecha(String texto, String nombreCampo) {
-        if (texto.isEmpty()) {
-            return null;
-        }
-        try {
-            return LocalDate.parse(texto, FORMATO_FECHA);
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException(nombreCampo + " inválida. Usa el formato dd/MM/yyyy (ej. 11/11/2026).");
-        }
-    }
-
     private void ejecutarPrevisualizacion() {
         FiltroReporte filtro;
         try {

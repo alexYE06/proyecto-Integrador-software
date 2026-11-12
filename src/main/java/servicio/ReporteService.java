@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ReporteService {
@@ -30,7 +31,16 @@ public class ReporteService {
     }
 
     public JasperPrint generarReporte(String tipoReporte, FiltroReporte filtro) throws Exception {
-        Map<String, Object> parametros = filtro.toParametersMap();
+        Map<String, Object> parametros = new HashMap<>(); 
+        
+        // ¡ESTO ES LO QUE FALTABA! 
+        // Inyectar los valores del filtro usando los nombres acordados en el documento
+        parametros.put("FECHA_INICIO", filtro.getFechaInicio());
+        parametros.put("FECHA_FIN_EXCLUSIVA", filtro.getFechaFinExclusiva());
+        parametros.put("ESTADO", filtro.getEstado());
+        parametros.put("ID_BUS", filtro.getIdBus());
+        parametros.put("TIPO_ACTIVACION", filtro.getTipoActivacion());
+
         String rutaRecurso = obtenerRutaPlantilla(tipoReporte);
 
         try (InputStream reportStream = ReporteService.class.getResourceAsStream(rutaRecurso)) {
@@ -42,6 +52,8 @@ public class ReporteService {
                 if (conn == null || conn.isClosed()) {
                     throw new SQLException("No se pudo establecer conexión con la base de datos.");
                 }
+                
+                // Compila el .jrxml y lo llena usando la conexión y los parámetros mapeados
                 JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
                 return JasperFillManager.fillReport(jasperReport, parametros, conn);
             }
