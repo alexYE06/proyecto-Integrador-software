@@ -50,10 +50,23 @@ public class MainCentralFrame extends JFrame {
         alerta.addActionListener(e -> new RegistrarAlertaView().setVisible(true));
         registros.add(conductor); registros.add(bus); registros.add(operador); registros.add(alerta);
         menuBar.add(registros);
+
+        JMenu consultas = new JMenu("Consultas");
+        JMenuItem menuConsulta01 = new JMenuItem("Consulta 01 - Alertas emitidas");
+        menuConsulta01.addActionListener(e -> new Consulta01().setVisible(true));
+        JMenuItem menuConsulta02 = new JMenuItem("Consulta 02 - Despacho y cercos (Jasper)");
+        menuConsulta02.addActionListener(e -> new Consulta02().setVisible(true));
+        consultas.add(menuConsulta01);
+        consultas.add(menuConsulta02);
+        menuBar.add(consultas);
+
         menuNavegacion.add(itemReportes);
         JMenuItem itemConsulta = new JMenuItem("Consulta 01 (Semana 15)");
         itemConsulta.addActionListener(e -> new Consulta01().setVisible(true));
         menuNavegacion.add(itemConsulta);
+        JMenuItem itemConsulta02 = new JMenuItem("Consulta 02 - Despacho y Cercos (Jasper)");
+        itemConsulta02.addActionListener(e -> new Consulta02().setVisible(true));
+        menuNavegacion.add(itemConsulta02);
         menuNavegacion.add(itemBackend);
         menuBar.add(menuNavegacion);
         setJMenuBar(menuBar);

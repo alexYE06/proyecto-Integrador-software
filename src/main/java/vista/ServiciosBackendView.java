@@ -108,6 +108,24 @@ public class ServiciosBackendView extends JPanel {
         });
         pnlMenu.add(itemRegistrarOperador);
 
+        JPanel itemConsulta01 = crearItemMenu("🔍", "Consulta 01 (Alertas)", false, false);
+        itemConsulta01.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new Consulta01().setVisible(true);
+            }
+        });
+        pnlMenu.add(itemConsulta01);
+
+        JPanel itemConsulta02 = crearItemMenu("📄", "Consulta 02 (Despacho PDF)", false, false);
+        itemConsulta02.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new Consulta02().setVisible(true);
+            }
+        });
+        pnlMenu.add(itemConsulta02);
+
         pnlSidebar.add(pnlMenu, BorderLayout.CENTER);
 
         // Perfil bottom

@@ -64,6 +64,34 @@ public class RegressionSuite {
    var template=JasperCompileManager.compileReport(in);var print=JasperFillManager.fillReport(template,new HashMap<>(),c);
    JasperExportManager.exportReportToPdfFile(print,out.resolve("Consulta01-Studio.pdf").toString());pdf(out.resolve("Consulta01-Studio.pdf"));
   }
+  Consulta02.Filtro c02All=new Consulta02.Filtro("","","Todas","Todos","","Contiene","",false,0,true);
+  Consulta02.Resultado r02=Consulta02DAO.ejecutar(c02All);
+  check(r02.filas().size()==50,"Consulta 02 general 50 despachos");
+  check(r02.filas().stream().map(a->a[0]).distinct().count()==50,"Consulta 02 sin duplicación de despachos");
+  check(Consulta02DAO.ejecutar(new Consulta02.Filtro("","","Comisaría ficticia 001","Simulado","DEMO-001","Contiene","Ficticio 001",false,0,true)).filas().size()==1,"Consulta 02 filtros AND");
+  check(Consulta02DAO.ejecutar(new Consulta02.Filtro("","","Comisaría ficticia 001","Todos","AEE-000","Contiene","",true,0,true)).filas().size()==2,"Consulta 02 filtros OR");
+  var c02Day=Consulta02DAO.ejecutar(new Consulta02.Filtro("2026-11-08","2026-11-08","Todas","Todos","","Contiene","",false,0,true));
+  check(c02Day.filas().size()==3&&c02Day.filas().stream().allMatch(a->a[2].toString().startsWith("2026-11-08")),"Consulta 02 fecha final inclusiva");
+  check(Consulta02DAO.ejecutar(new Consulta02.Filtro("","","Todas","Todos","AE","Empieza en","",false,2,false)).filas().size()==1,"Consulta 02 LIKE Empieza en");
+  check(Consulta02DAO.ejecutar(new Consulta02.Filtro("","","Todas","Todos","050","Termina en","",false,2,false)).filas().size()==1,"Consulta 02 LIKE Termina en unidad");
+  check(Consulta02DAO.ejecutar(new Consulta02.Filtro("","","Todas","Todos","","Contiene","Ficticio 025",false,3,false)).filas().size()==1,"Consulta 02 filtro operador");
+  check(Consulta02DAO.ejecutar(new Consulta02.Filtro("","","Todas","Todos","' OR 1=1 --","Contiene","",false,0,true)).filas().isEmpty(),"Consulta 02 inyección tratada como texto");
+  check(Consulta02DAO.ejecutar(new Consulta02.Filtro("","","Todas","Todos","%","Contiene","_",false,0,true)).filas().isEmpty(),"Consulta 02 comodines literales");
+  rejects(()->Consulta02DAO.construir(new Consulta02.Filtro("2026-02-30","","Todas","Todos","","Contiene","",false,0,true)),"Consulta 02 fecha imposible");
+  rejects(()->Consulta02DAO.construir(new Consulta02.Filtro("2026-12-01","2026-11-01","Todas","Todos","","Contiene","",false,0,true)),"Consulta 02 rango invertido");
+  var cat02=Consulta02DAO.cargarCatalogos();
+  check(cat02.comisarias().size()==50&&cat02.estadosDespacho().contains("Simulado"),"Consulta 02 catálogos dinámicos");
+  Consulta02Service.pdf(c02All,out.resolve("Consulta02.pdf"));
+  check(pdf(out.resolve("Consulta02.pdf")).contains("50"),"PDF Jasper Consulta 02 contiene cantidad");
+  Consulta02Service.pdf(new Consulta02.Filtro("","","Comisaría ficticia 001","Simulado","TST-001","Contiene","Ficticio 001",false,0,true),out.resolve("Consulta02-filtrada.pdf"));
+  check(pdf(out.resolve("Consulta02-filtrada.pdf")).contains("TST-001"),"PDF Jasper Consulta 02 filtrada");
+  Consulta02Service.pdf(new Consulta02.Filtro("2099-01-01","2099-12-31","Todas","Todos","","Contiene","",false,0,true),out.resolve("Consulta02-vacia.pdf"));
+  check(pdf(out.resolve("Consulta02-vacia.pdf")).contains("Sin coincidencias"),"PDF Jasper Consulta 02 vacío informativo");
+  try(var in=RegressionSuite.class.getResourceAsStream("/reports/Consulta02.jrxml");var c=ConexionBD.obtenerConexion()){
+   var template=JasperCompileManager.compileReport(in);var print=JasperFillManager.fillReport(template,new HashMap<>(),c);
+   JasperExportManager.exportReportToPdfFile(print,out.resolve("Consulta02-Studio.pdf").toString());
+   check(pdf(out.resolve("Consulta02-Studio.pdf")).contains("50"),"Consulta02.jrxml compatible con Studio");
+  }
   var service=new EstadoAlertaService();var incident=service.listar().getFirst();String next=incident.estado().equals("Atendida")?"Recibida":"Atendida";
   service.actualizar(incident.id(),incident.estado(),next);
   check(new AlertaDAO().obtenerPorId(incident.id()).getEstado().equals(next),"estado persistido");
