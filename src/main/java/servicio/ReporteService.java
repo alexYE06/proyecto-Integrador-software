@@ -31,9 +31,9 @@ public class ReporteService {
     }
 
     public JasperPrint generarReporte(String tipoReporte, FiltroReporte filtro) throws Exception {
-        Map<String, Object> parametros = new HashMap<>(); 
-        
-        // ¡ESTO ES LO QUE FALTABA! 
+        Map<String, Object> parametros = new HashMap<>();
+
+        // ¡ESTO ES LO QUE FALTABA!
         // Inyectar los valores del filtro usando los nombres acordados en el documento
         parametros.put("FECHA_INICIO", filtro.getFechaInicio());
         parametros.put("FECHA_FIN_EXCLUSIVA", filtro.getFechaFinExclusiva());
@@ -52,8 +52,9 @@ public class ReporteService {
                 if (conn == null || conn.isClosed()) {
                     throw new SQLException("No se pudo establecer conexión con la base de datos.");
                 }
-                
+
                 // Compila el .jrxml y lo llena usando la conexión y los parámetros mapeados
+                parametros.put("BASE_DATOS", conn.getCatalog());
                 JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
                 return JasperFillManager.fillReport(jasperReport, parametros, conn);
             }

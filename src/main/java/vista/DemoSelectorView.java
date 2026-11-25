@@ -46,14 +46,14 @@ public class DemoSelectorView extends JFrame {
 
         pnlBotones.add(btnChofer);
         pnlBotones.add(btnCentral);
-        
+
         add(pnlBotones, BorderLayout.CENTER);
 
         // --- ENLACE SECRETO / DISCRETO AL DISEÑO ANTIGUO ---
         JPanel pnlSur = new JPanel(new FlowLayout(FlowLayout.CENTER));
         pnlSur.setBackground(new Color(15, 23, 42));
         pnlSur.setBorder(new EmptyBorder(0, 0, 10, 0));
-        
+
         JButton btnSecreto = new JButton("Abrir versión clásica (V1)");
         btnSecreto.setContentAreaFilled(false);
         btnSecreto.setBorderPainted(false);
@@ -61,22 +61,23 @@ public class DemoSelectorView extends JFrame {
         btnSecreto.setForeground(new Color(51, 65, 85)); // Un gris oscuro, casi oculto en el fondo
         btnSecreto.setFont(new Font("SansSerif", Font.PLAIN, 10));
         btnSecreto.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         // Efecto hover sutil para que se den cuenta que es un botón
         btnSecreto.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnSecreto.setForeground(new Color(148, 163, 184)); // Se aclara un poco al pasar el mouse
             }
+
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 btnSecreto.setForeground(new Color(51, 65, 85)); // Vuelve a ocultarse
             }
         });
-        
+
         btnSecreto.addActionListener(e -> {
             this.dispose();
             SwingUtilities.invokeLater(() -> new LoginCentralAntiguoView().setVisible(true));
         });
-        
+
         pnlSur.add(btnSecreto);
         add(pnlSur, BorderLayout.SOUTH);
     }
@@ -93,11 +94,11 @@ public class DemoSelectorView extends JFrame {
                     g2.setColor(new Color(15, 23, 42));
                 }
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-                
+
                 g2.setColor(colorBorde);
                 g2.setStroke(new BasicStroke(2));
                 g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 20, 20);
-                
+
                 g2.dispose();
                 super.paintComponent(g);
             }
@@ -112,7 +113,7 @@ public class DemoSelectorView extends JFrame {
         lblTit.setFont(new Font("SansSerif", Font.BOLD, 18));
         lblTit.setForeground(Color.WHITE);
         lblTit.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         JLabel lblSub = new JLabel(subtitulo);
         lblSub.setFont(new Font("SansSerif", Font.PLAIN, 12));
         lblSub.setForeground(new Color(148, 163, 184));

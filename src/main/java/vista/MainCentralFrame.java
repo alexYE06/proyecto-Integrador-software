@@ -25,21 +25,35 @@ public class MainCentralFrame extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         JMenu menuNavegacion = new JMenu("Módulos");
 
-        JMenuItem itemMonitoreo = new JMenuItem("Monitoreo de flota");
+        JMenuItem itemMonitoreo = new JMenuItem("Monitoreo de flota (prototipo)");
         itemMonitoreo.addActionListener(e -> cambiarPantalla("Monitoreo"));
 
-        JMenuItem itemIncidentes = new JMenuItem("Incidente activo");
+        JMenuItem itemIncidentes = new JMenuItem("Incidente (simulación)");
         itemIncidentes.addActionListener(e -> cambiarPantalla("Incidentes"));
 
         JMenuItem itemReportes = new JMenuItem("Reportes PDF (Filtros)");
         itemReportes.addActionListener(e -> cambiarPantalla("Reportes"));
 
-        JMenuItem itemBackend = new JMenuItem("Servicios backend");
+        JMenuItem itemBackend = new JMenuItem("Servicios backend (prototipo)");
         itemBackend.addActionListener(e -> cambiarPantalla("Backend"));
 
         menuNavegacion.add(itemMonitoreo);
         menuNavegacion.add(itemIncidentes);
+        JMenuItem gestion = new JMenuItem("Gestión de incidentes (MySQL)");
+        gestion.addActionListener(e -> cambiarPantalla("Gestion"));
+        menuNavegacion.add(gestion);
+        JMenu registros = new JMenu("Registros");
+        JMenuItem conductor = new JMenuItem("Conductor"), bus = new JMenuItem("Bus"), operador = new JMenuItem("Operador"), alerta = new JMenuItem("Alerta");
+        conductor.addActionListener(e -> new RegistrarConductorView().setVisible(true));
+        bus.addActionListener(e -> new RegistrarBusView().setVisible(true));
+        operador.addActionListener(e -> new RegistrarOperadorView().setVisible(true));
+        alerta.addActionListener(e -> new RegistrarAlertaView().setVisible(true));
+        registros.add(conductor); registros.add(bus); registros.add(operador); registros.add(alerta);
+        menuBar.add(registros);
         menuNavegacion.add(itemReportes);
+        JMenuItem itemConsulta = new JMenuItem("Consulta 01 (Semana 15)");
+        itemConsulta.addActionListener(e -> new Consulta01().setVisible(true));
+        menuNavegacion.add(itemConsulta);
         menuNavegacion.add(itemBackend);
         menuBar.add(menuNavegacion);
         setJMenuBar(menuBar);
@@ -50,6 +64,7 @@ public class MainCentralFrame extends JFrame {
         // Añadir las vistas como tarjetas
         mainPanel.add(new MonitoreoFlotaView(), "Monitoreo");
         mainPanel.add(new IncidentesView(), "Incidentes");
+        mainPanel.add(new GestionIncidentesView(), "Gestion");
         mainPanel.add(new ReportesView(), "Reportes");
         mainPanel.add(new ServiciosBackendView(), "Backend");
 

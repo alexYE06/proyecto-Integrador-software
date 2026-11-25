@@ -1,1 +1,8 @@
 target/
+lib/
+.env
+.env.*
+!.env.example
+*.log
+demo-datos/
+*.pdf

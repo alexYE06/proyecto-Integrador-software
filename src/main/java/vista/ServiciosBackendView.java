@@ -206,10 +206,10 @@ public class ServiciosBackendView extends JPanel {
         pnlCards.setOpaque(false);
         pnlCards.setPreferredSize(new Dimension(0, 100));
         
-        pnlCards.add(crearServicioCard("WebSockets / telemetría", "Conectado", "80 canales · <100 ms"));
+        pnlCards.add(crearServicioCard("WebSockets / telemetría", "Simulado", "Sin conexión WebSocket real"));
         pnlCards.add(crearServicioCard("Gateway SMS → PNP", "Operativo", "Acuse automático de entrega"));
         pnlCards.add(crearServicioCard("SMTP → Gerencia", "Operativo", "Columna de salida cifrada TLS"));
-        pnlCards.add(crearServicioCard("Almacenamiento de evidencias", "Cifrado", "AES-256 · marca de agua"));
+        pnlCards.add(crearServicioCard("Almacenamiento de evidencias", "Prototipo", "Cifrado aún no implementado"));
         
         pnlCuerpo.add(pnlCards, BorderLayout.NORTH);
 

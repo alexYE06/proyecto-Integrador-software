@@ -164,7 +164,7 @@ public class MonitoreoFlotaView extends JPanel {
         JLabel lblTitulo = new JLabel("Monitoreo en tiempo real");
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 22));
         lblTitulo.setForeground(new Color(15, 23, 42));
-        JLabel lblSub = new JLabel("80 unidades · latencia WebSocket < 100 ms · Callao");
+        JLabel lblSub = new JLabel("PROTOTIPO: unidades, mapa y latencias simuladas · Callao");
         lblSub.setFont(new Font("SansSerif", Font.PLAIN, 11));
         lblSub.setForeground(new Color(148, 163, 184));
         pnlHeaderTit.add(lblTitulo);
