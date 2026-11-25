@@ -10,6 +10,7 @@ public class FiltroReporte {
     private String tipoActivacion;
 
     public FiltroReporte(Timestamp fechaInicio, Timestamp fechaFinExclusiva, String estado, Integer idBus, String tipoActivacion) {
+        if (fechaInicio != null && fechaFinExclusiva != null && !fechaInicio.before(fechaFinExclusiva)) throw new IllegalArgumentException("La fecha final no puede ser anterior a la inicial.");
         this.fechaInicio = fechaInicio;
         this.fechaFinExclusiva = fechaFinExclusiva;
         this.estado = estado;

@@ -22,12 +22,12 @@ public class AlertaController implements ActionListener {
             // Conexión preparada: aquí se llamará a alertaDAO.actualizarEstado(idAlerta,
             // nuevoEstado)
             JOptionPane.showMessageDialog(view,
-                    "Transacción SQL confirmada:\nEstado de alerta actualizado a «" + nuevoEstado + "» en MySQL.",
+                    "SIMULACIÓN: no se guardó en MySQL.\nEstado seleccionado: «" + nuevoEstado + "». Usa Módulos > Gestión de incidentes (MySQL).",
                     "Persistencia DAO", JOptionPane.INFORMATION_MESSAGE);
         } else if (e.getSource() == view.getBtnDespacharPNP()) {
             JOptionPane.showMessageDialog(view,
-                    "Enlace telemático y ficha de incidente remitidos a la Central 105 de la PNP.\n" +
-                            "Unidad policial asignada: Patrullero Callao-12.",
+                    "SIMULACIÓN: no se ha enviado ninguna comunicación a la PNP.\n" +
+                            "Unidad ficticia: Patrullero Callao-12.",
                     "Despacho Policial", JOptionPane.WARNING_MESSAGE);
         }
     }

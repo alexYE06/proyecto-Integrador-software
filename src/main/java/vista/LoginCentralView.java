@@ -205,7 +205,7 @@ public class LoginCentralView extends JFrame {
         pnlLogin.add(btnIngresar);
 
         // Footers
-        JLabel lblDemo = new JLabel("<html><center>Demo: <b>lramos</b> (operador) o <b>admin</b> • clave <b>demo123</b><br><span style='color:#94a3b8;'>* El conductor no usa este formulario; entra por el móvil.</span></center></html>");
+        JLabel lblDemo = new JLabel("<html><center>Usa una cuenta registrada en la base conectada.<br><span style='color:#94a3b8;'>* El conductor no usa este formulario; entra por el móvil.</span></center></html>");
         lblDemo.setFont(new Font("SansSerif", Font.PLAIN, 9));
         lblDemo.setForeground(new Color(100, 116, 139));
         lblDemo.setBounds(25, 345, 270, 40);

@@ -95,7 +95,7 @@ public class ReportesView extends JPanel {
         txtFechaInicio = new JDateChooser();
         txtFechaInicio.setDateFormatString("dd/MM/yyyy");
         txtFechaInicio.setToolTipText("Seleccione la fecha inicial. Dejar vacío para sin límite.");
-        
+
         txtFechaFin = new JDateChooser();
         txtFechaFin.setDateFormatString("dd/MM/yyyy");
         txtFechaFin.setToolTipText("Seleccione la fecha final. Dejar vacío para sin límite.");
@@ -109,7 +109,8 @@ public class ReportesView extends JPanel {
         cbModalidad = new JComboBox<>(new String[]{
                 "Todas",
                 "Botón de pánico oculto",
-                "Tres pulsaciones botón",
+                "Tres pulsaciones botón encendido",
+                "Reporte manual de central",
                 "Llamada de emergencia",
                 "Parada no autorizada",
                 "Desvío de ruta crítico"
@@ -297,6 +298,9 @@ public class ReportesView extends JPanel {
                 ? seleccionado
                 : new File(seleccionado.getAbsolutePath() + ".pdf");
 
+        if (destino.exists() && JOptionPane.showConfirmDialog(this,
+                "¿Reemplazar el PDF existente?", "Archivo existente",
+                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
         bloquearControles(true, "Exportando PDF a " + destino.getName() + "...");
 
         new SwingWorker<Void, Void>() {

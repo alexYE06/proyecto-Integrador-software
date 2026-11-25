@@ -30,7 +30,27 @@ public class LoginController implements ActionListener {
         }
 
         // Llamada al método de validación de Piero contra MySQL
-        Usuario u = usuarioDAO.validarAcceso(user, pass);
+        Usuario u;
+        try {
+            u = usuarioDAO.validarAcceso(user, pass);
+        } catch (IllegalStateException ex) {
+            String mensaje = "No se pudo leer la base de datos. Tu cuenta del programa no ha sido comprobada.";
+            if (ex.getCause() instanceof java.sql.SQLException sql) {
+                String estado = sql.getSQLState();
+                if ("28000".equals(estado)) {
+                    mensaje = "MySQL no aceptó la clave de conexión.\n"
+                            + "Cierra el programa y vuelve a abrirlo. En la ventana negra escribe la clave de MySQL.\n"
+                            + "Esto no significa que la cuenta operador1 esté mal.";
+                } else if (estado != null && estado.startsWith("08")) {
+                    mensaje = "No se pudo comunicar con MySQL.\n"
+                            + "Comprueba que puedes abrir tu conexión en MySQL Workbench.\n"
+                            + "Tu cuenta del programa todavía no ha podido comprobarse.";
+                }
+                mensaje += "\nCódigo de diagnóstico: " + sql.getErrorCode() + " / " + estado;
+            }
+            JOptionPane.showMessageDialog(view, mensaje, "No se pudo abrir MySQL", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         if (u != null) {
             JOptionPane.showMessageDialog(view,
@@ -40,7 +60,7 @@ public class LoginController implements ActionListener {
             new vista.MainCentralFrame().setVisible(true);
         } else {
             JOptionPane.showMessageDialog(view,
-                    "Credenciales incorrectas o usuario no activo.",
+                    "Se pudo leer MySQL, pero el usuario o la contraseña no coinciden, o la cuenta está inactiva.",
                     "Fallo de Autenticación", JOptionPane.ERROR_MESSAGE);
         }
     }

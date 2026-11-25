@@ -14,7 +14,7 @@ public class LoginChoferView extends JFrame {
     private JButton btnCredencialesDemo;
 
     public LoginChoferView() {
-        setTitle("SAT Alerta - Chofer");
+        setTitle("SAT Alerta - Chofer (simulación sin autenticación)");
         setSize(360, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

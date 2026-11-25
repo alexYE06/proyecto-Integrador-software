@@ -39,7 +39,7 @@ public class UsuarioDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error en UsuarioDAO.validarAcceso: " + e.getMessage());
+            throw new IllegalStateException("No se pudo comprobar la cuenta en MySQL.", e);
         }
         return null;
     }

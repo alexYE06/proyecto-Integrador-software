@@ -1,33 +1,17 @@
 package conexion;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-public class ConexionBD {
-
-    private static final String URL = "jdbc:mysql://localhost:3306/sistema_alertas?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private static final String USER = "root";
-    private static final String PASSWORD = "123456";
-
-    public static Connection obtenerConexion() throws SQLException {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("Error: No se encontró el driver de MySQL Connector/J.", e);
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println("Iniciando prueba de conexión a MySQL...");
-        try (Connection conn = obtenerConexion()) {
-            if (conn != null && !conn.isClosed()) {
-                System.out.println("CONEXION EXITOSA a la base de datos 'sistema_alertas'!");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al conectar a la base de datos:");
-            System.err.println(e.getMessage());
-        }
-    }
+import java.sql.*;
+import java.util.Properties;
+/** Configuración compartida por formularios, DAO, consultas y reportes. */
+public final class ConexionBD {
+ private ConexionBD() {}
+ private static String valor(String n,String d){return System.getProperty(n,System.getenv().getOrDefault(n,d));}
+ public static Connection obtenerConexion() throws SQLException {
+  String url="jdbc:mysql://"+valor("DB_HOST","127.0.0.1")+":"+valor("DB_PORT","3306")+"/"+valor("DB_NAME","sistema_alertas");
+  Properties p=new Properties();
+  p.setProperty("user",valor("DB_USER","root"));p.setProperty("password",valor("DB_PASSWORD",""));
+  p.setProperty("serverTimezone","America/Lima");p.setProperty("connectTimeout","5000");p.setProperty("socketTimeout","30000");
+  p.setProperty("sslMode",valor("DB_SSL_MODE","PREFERRED"));
+  p.setProperty("allowPublicKeyRetrieval",valor("DB_ALLOW_PUBLIC_KEY_RETRIEVAL","false"));
+  return DriverManager.getConnection(url,p);
+ }
 }

@@ -1,13 +1,13 @@
-CREATE DATABASE sistema_alertas;
+CREATE DATABASE IF NOT EXISTS sistema_alertas CHARACTER SET utf8mb4;
 USE sistema_alertas;
-CREATE TABLE usuario (
+CREATE TABLE IF NOT EXISTS usuario (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     nombre_usuario VARCHAR(50) NOT NULL,
     contrasena VARCHAR(100) NOT NULL,
     rol VARCHAR(30) NOT NULL,
     estado VARCHAR(20) NOT NULL
 );
-CREATE TABLE conductor (
+CREATE TABLE IF NOT EXISTS conductor (
     id_conductor INT AUTO_INCREMENT PRIMARY KEY,
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE conductor (
     licencia VARCHAR(20) NOT NULL,
     estado VARCHAR(20) NOT NULL
 );
-CREATE TABLE operador (
+CREATE TABLE IF NOT EXISTS operador (
     id_operador INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
     nombres VARCHAR(100) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE operador (
     estado VARCHAR(20) NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
-CREATE TABLE bus (
+CREATE TABLE IF NOT EXISTS bus (
     id_bus INT AUTO_INCREMENT PRIMARY KEY,
     placa VARCHAR(10) NOT NULL UNIQUE,
     codigo_unidad VARCHAR(20) NOT NULL UNIQUE,
@@ -34,7 +34,7 @@ CREATE TABLE bus (
     capacidad INT,
     estado VARCHAR(20) NOT NULL
 );
-CREATE TABLE comisaria (
+CREATE TABLE IF NOT EXISTS comisaria (
     id_comisaria INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     direccion VARCHAR(150),
@@ -42,7 +42,7 @@ CREATE TABLE comisaria (
     latitud DECIMAL(10,7),
     longitud DECIMAL(10,7)
 );
-CREATE TABLE asignacion_turno (
+CREATE TABLE IF NOT EXISTS asignacion_turno (
     id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
     id_conductor INT NOT NULL,
     id_bus INT NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE asignacion_turno (
     FOREIGN KEY (id_conductor) REFERENCES conductor(id_conductor),
     FOREIGN KEY (id_bus) REFERENCES bus(id_bus)
 );
-CREATE TABLE alerta (
+CREATE TABLE IF NOT EXISTS alerta (
     id_alerta INT AUTO_INCREMENT PRIMARY KEY,
     id_conductor INT NOT NULL,
     id_bus INT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE alerta (
     FOREIGN KEY (id_bus) REFERENCES bus(id_bus),
     FOREIGN KEY (id_operador) REFERENCES operador(id_operador)
 );
-CREATE TABLE telemetria_gps (
+CREATE TABLE IF NOT EXISTS telemetria_gps (
     id_telemetria INT AUTO_INCREMENT PRIMARY KEY,
     id_bus INT NOT NULL,
     id_alerta INT,
@@ -77,7 +77,7 @@ CREATE TABLE telemetria_gps (
     FOREIGN KEY (id_bus) REFERENCES bus(id_bus),
     FOREIGN KEY (id_alerta) REFERENCES alerta(id_alerta)
 );
-CREATE TABLE evidencia_multimedia (
+CREATE TABLE IF NOT EXISTS evidencia_multimedia (
     id_evidencia INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
     tipo VARCHAR(30) NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE evidencia_multimedia (
     descripcion VARCHAR(255),
     FOREIGN KEY (id_alerta) REFERENCES alerta(id_alerta)
 );
-CREATE TABLE despacho_auxilio (
+CREATE TABLE IF NOT EXISTS despacho_auxilio (
     id_despacho INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
     id_comisaria INT NOT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE despacho_auxilio (
     FOREIGN KEY (id_comisaria) REFERENCES comisaria(id_comisaria),
     FOREIGN KEY (id_operador) REFERENCES operador(id_operador)
 );
-CREATE TABLE cerco_preventivo (
+CREATE TABLE IF NOT EXISTS cerco_preventivo (
     id_cerco INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
     id_comisaria INT NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE cerco_preventivo (
     FOREIGN KEY (id_alerta) REFERENCES alerta(id_alerta),
     FOREIGN KEY (id_comisaria) REFERENCES comisaria(id_comisaria)
 );
-CREATE TABLE notificacion (
+CREATE TABLE IF NOT EXISTS notificacion (
     id_notificacion INT AUTO_INCREMENT PRIMARY KEY,
     id_alerta INT NOT NULL,
     id_usuario INT NOT NULL,

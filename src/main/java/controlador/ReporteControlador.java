@@ -28,23 +28,11 @@ public class ReporteControlador {
     // Método existente conservado para no romper el botón actual de IncidentesView
     public static void generarYMostrarReporte() {
         try {
-            InputStream reportStream = ReporteControlador.class.getResourceAsStream("/reports/reporte_alertas.jrxml");
-            if (reportStream == null) {
-                JOptionPane.showMessageDialog(null,
-                        "No se encontró el archivo 'reporte_alertas.jrxml' en src/main/resources/reports/",
-                        "Error de Plantilla",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            try (Connection conn = ConexionBD.obtenerConexion()) {
-                JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
-                JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, new HashMap<>(), conn);
-
-                JasperViewer viewer = new JasperViewer(jasperPrint, false);
-                viewer.setTitle("Reporte de Incidencias - SAT-Carmen");
-                viewer.setVisible(true);
-            }
+            JasperPrint print = new ReporteService().generarReporte(ReporteService.REPORTE_INCIDENCIAS,
+                    new FiltroReporte(null, null, null, null, null));
+            JasperViewer viewer = new JasperViewer(print, false);
+            viewer.setTitle("Reporte de Incidencias - SAT-Carmen");
+            viewer.setVisible(true);
 
         } catch (Exception e) {
             e.printStackTrace();

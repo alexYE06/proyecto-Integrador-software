@@ -68,3 +68,6 @@ Desde el menú lateral de la central se puede abrir:
 
 Para registrar una alerta deben existir conductores y buses con estado `Activo`.
 Los dos formularios utilizan la conexión JDBC configurada en `ConexionBD`.
+## Consolidación de semanas 14 y 15
+
+Reportes Jasper, Consulta 01 y registros integrados. Consulta docs/CONSOLIDACION.md para iniciar, probar, revisar las brechas y preparar semana 16. Ejecuta COMPILAR.ps1 e INICIAR.ps1 desde la raíz. Las funciones móviles, mapas y servicios en vivo siguen siendo prototipos; no son una plataforma operativa de emergencias.
