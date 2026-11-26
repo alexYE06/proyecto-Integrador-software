@@ -56,8 +56,11 @@ public class MainCentralFrame extends JFrame {
         menuConsulta01.addActionListener(e -> new Consulta01().setVisible(true));
         JMenuItem menuConsulta02 = new JMenuItem("Consulta 02 - Despacho y cercos (Jasper)");
         menuConsulta02.addActionListener(e -> new Consulta02().setVisible(true));
+        JMenuItem menuConsulta03 = new JMenuItem("Consulta 03 - Alertas por bus (Jasper)");
+        menuConsulta03.addActionListener(e -> new Consulta03().setVisible(true));
         consultas.add(menuConsulta01);
         consultas.add(menuConsulta02);
+        consultas.add(menuConsulta03);
         menuBar.add(consultas);
 
         menuNavegacion.add(itemReportes);
@@ -67,6 +70,9 @@ public class MainCentralFrame extends JFrame {
         JMenuItem itemConsulta02 = new JMenuItem("Consulta 02 - Despacho y Cercos (Jasper)");
         itemConsulta02.addActionListener(e -> new Consulta02().setVisible(true));
         menuNavegacion.add(itemConsulta02);
+        JMenuItem itemConsulta03 = new JMenuItem("Consulta 03 - Alertas por bus (Jasper)");
+        itemConsulta03.addActionListener(e -> new Consulta03().setVisible(true));
+        menuNavegacion.add(itemConsulta03);
         menuNavegacion.add(itemBackend);
         menuBar.add(menuNavegacion);
         setJMenuBar(menuBar);
