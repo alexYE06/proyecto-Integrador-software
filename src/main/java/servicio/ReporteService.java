@@ -20,12 +20,14 @@ public class ReporteService {
     public static final String REPORTE_INCIDENCIAS = "Incidencias";
     public static final String REPORTE_ESTADOS = "Estados";
     public static final String REPORTE_MODALIDADES = "Modalidades";
+    public static final String REPORTE_ALERTAS_DIA = "Alertas por día";
 
     public String obtenerRutaPlantilla(String tipoReporte) {
         return switch (tipoReporte) {
             case REPORTE_INCIDENCIAS -> "/reports/reporte_alertas.jrxml";
             case REPORTE_ESTADOS -> "/reports/reporte_estados.jrxml";
             case REPORTE_MODALIDADES -> "/reports/reporte_modalidades.jrxml";
+            case REPORTE_ALERTAS_DIA -> "/reports/reporte_alertas_por_dia.jrxml";
             default -> throw new IllegalArgumentException("Tipo de reporte no reconocido: " + tipoReporte);
         };
     }
@@ -37,6 +39,8 @@ public class ReporteService {
         // Inyectar los valores del filtro usando los nombres acordados en el documento
         parametros.put("FECHA_INICIO", filtro.getFechaInicio());
         parametros.put("FECHA_FIN_EXCLUSIVA", filtro.getFechaFinExclusiva());
+        // El reporte diario usa FECHA_FIN para dejar explícito que el extremo es exclusivo.
+        parametros.put("FECHA_FIN", filtro.getFechaFinExclusiva());
         parametros.put("ESTADO", filtro.getEstado());
         parametros.put("ID_BUS", filtro.getIdBus());
         parametros.put("TIPO_ACTIVACION", filtro.getTipoActivacion());

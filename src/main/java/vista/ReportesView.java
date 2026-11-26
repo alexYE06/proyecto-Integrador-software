@@ -89,7 +89,8 @@ public class ReportesView extends JPanel {
         cbTipoReporte = new JComboBox<>(new String[]{
                 ReporteService.REPORTE_INCIDENCIAS,
                 ReporteService.REPORTE_ESTADOS,
-                ReporteService.REPORTE_MODALIDADES
+                ReporteService.REPORTE_MODALIDADES,
+                ReporteService.REPORTE_ALERTAS_DIA
         });
 
         txtFechaInicio = new JDateChooser();
@@ -115,6 +116,9 @@ public class ReportesView extends JPanel {
                 "Parada no autorizada",
                 "Desvío de ruta crítico"
         });
+
+        cbTipoReporte.addActionListener(e -> actualizarFiltrosSegunReporte());
+        actualizarFiltrosSegunReporte();
 
         agregarCampo(pnlCard, gbc, 0, 0, "Tipo de reporte:", cbTipoReporte);
         agregarCampo(pnlCard, gbc, 0, 1, "Estado de alerta:", cbEstado);
@@ -171,6 +175,13 @@ public class ReportesView extends JPanel {
         comp.setPreferredSize(new Dimension(260, 34));
         comp.setFont(new Font("SansSerif", Font.PLAIN, 13));
         panel.add(comp, gbc);
+    }
+
+    private void actualizarFiltrosSegunReporte() {
+        boolean usaFiltrosCategoria = !ReporteService.REPORTE_ALERTAS_DIA.equals(cbTipoReporte.getSelectedItem());
+        cbEstado.setEnabled(usaFiltrosCategoria);
+        cbBus.setEnabled(usaFiltrosCategoria);
+        cbModalidad.setEnabled(usaFiltrosCategoria);
     }
 
     private JButton crearBoton(String texto, Color bg, Color fg) {
