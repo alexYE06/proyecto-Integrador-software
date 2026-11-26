@@ -21,19 +21,27 @@
          Fechas en formato AAAA-MM-DD (extremo final inclusivo). Campos vacíos o Todos/Todas no restringen.
          Compatible con Jaspersoft Studio (Design y Preview con MySQL) y con ejecución desde Java. -->
     <parameter name="DESDE" class="java.lang.String">
-        <parameterDescription><![CDATA[Fecha inicial de despacho (AAAA-MM-DD); vacío = sin límite]]></parameterDescription>
+        <parameterDescription><![CDATA[Fecha inicial (AAAA-MM-DD); vacío = sin límite]]></parameterDescription>
         <defaultValueExpression><![CDATA[""]]></defaultValueExpression>
     </parameter>
     <parameter name="HASTA" class="java.lang.String">
-        <parameterDescription><![CDATA[Fecha final inclusiva de despacho (AAAA-MM-DD); vacío = sin límite]]></parameterDescription>
+        <parameterDescription><![CDATA[Fecha final inclusiva (AAAA-MM-DD); vacío = sin límite]]></parameterDescription>
         <defaultValueExpression><![CDATA[""]]></defaultValueExpression>
     </parameter>
+    <parameter name="ESTADO_ALERTA" class="java.lang.String">
+        <parameterDescription><![CDATA[Estado de la alerta; vacío o Todos = sin filtro]]></parameterDescription>
+        <defaultValueExpression><![CDATA["Todos"]]></defaultValueExpression>
+    </parameter>
     <parameter name="COMISARIA" class="java.lang.String">
-        <parameterDescription><![CDATA[Nombre exacto de comisaría; vacío o Todas = sin filtro]]></parameterDescription>
+        <parameterDescription><![CDATA[Nombre exacto de comisaría (o Sin comisaría); vacío o Todas = sin filtro]]></parameterDescription>
         <defaultValueExpression><![CDATA["Todas"]]></defaultValueExpression>
     </parameter>
     <parameter name="ESTADO_DESPACHO" class="java.lang.String">
-        <parameterDescription><![CDATA[Estado del despacho de auxilio; vacío o Todos = sin filtro]]></parameterDescription>
+        <parameterDescription><![CDATA[Estado del despacho de auxilio (o Sin despacho); vacío o Todos = sin filtro]]></parameterDescription>
+        <defaultValueExpression><![CDATA["Todos"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="ESTADO_CERCO" class="java.lang.String">
+        <parameterDescription><![CDATA[Estado del cerco preventivo (o Sin cerco); vacío o Todos = sin filtro]]></parameterDescription>
         <defaultValueExpression><![CDATA["Todos"]]></defaultValueExpression>
     </parameter>
     <parameter name="BUS" class="java.lang.String">
@@ -53,8 +61,8 @@
         <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
     </parameter>
     <parameter name="ORDEN" class="java.lang.String">
-        <parameterDescription><![CDATA[Fecha de despacho, Comisaría, Unidad / Placa, Operador, Estado de despacho, Estado de cerco]]></parameterDescription>
-        <defaultValueExpression><![CDATA["Fecha de despacho"]]></defaultValueExpression>
+        <parameterDescription><![CDATA[Fecha (despacho/alerta), Comisaría, Unidad / Placa, Operador, Estado de alerta, Estado de despacho, Estado de cerco]]></parameterDescription>
+        <defaultValueExpression><![CDATA["Fecha (despacho/alerta)"]]></defaultValueExpression>
     </parameter>
     <parameter name="DESCENDENTE" class="java.lang.Boolean">
         <parameterDescription><![CDATA[true = DESC; false = ASC]]></parameterDescription>
@@ -66,86 +74,100 @@
     </parameter>
     <queryString language="SQL"><![CDATA[
 SELECT
-    d.id_despacho,
     a.id_alerta,
-    d.fecha_hora AS fecha_despacho,
+    COALESCE(d.fecha_hora, a.fecha_hora) AS fecha_referencia,
     CONCAT(b.codigo_unidad, ' / ', b.placa) AS unidad_placa,
-    cm.nombre AS comisaria,
-    CONCAT(o.nombres, ' ', o.apellidos) AS operador,
-    d.estado AS estado_despacho,
+    a.estado AS estado_alerta,
+    COALESCE(cm.nombre, 'Sin comisaría') AS comisaria,
+    COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador') AS operador,
+    COALESCE(d.estado, 'Sin despacho') AS estado_despacho,
     COALESCE(cp.estado, 'Sin cerco') AS estado_cerco
-FROM despacho_auxilio d
-INNER JOIN alerta a ON a.id_alerta = d.id_alerta
+FROM alerta a
 INNER JOIN bus b ON b.id_bus = a.id_bus
-INNER JOIN comisaria cm ON cm.id_comisaria = d.id_comisaria
-INNER JOIN operador o ON o.id_operador = d.id_operador
+LEFT JOIN despacho_auxilio d ON d.id_despacho = (
+    SELECT d2.id_despacho
+    FROM despacho_auxilio d2
+    WHERE d2.id_alerta = a.id_alerta
+    ORDER BY d2.fecha_hora DESC, d2.id_despacho DESC
+    LIMIT 1
+)
+LEFT JOIN comisaria cm ON cm.id_comisaria = d.id_comisaria
+LEFT JOIN operador o ON o.id_operador = COALESCE(d.id_operador, a.id_operador)
 LEFT JOIN cerco_preventivo cp ON cp.id_cerco = (
     SELECT cp2.id_cerco
     FROM cerco_preventivo cp2
-    WHERE cp2.id_alerta = d.id_alerta
-    ORDER BY (cp2.id_comisaria = d.id_comisaria) DESC, cp2.fecha_inicio DESC, cp2.id_cerco DESC
+    WHERE cp2.id_alerta = a.id_alerta
+    ORDER BY (d.id_comisaria IS NOT NULL AND cp2.id_comisaria = d.id_comisaria) DESC, cp2.fecha_inicio DESC, cp2.id_cerco DESC
     LIMIT 1
 )
 CROSS JOIN (SELECT
     NULLIF(TRIM($P{DESDE}), '') AS desde,
     NULLIF(TRIM($P{HASTA}), '') AS hasta,
+    NULLIF(NULLIF(TRIM($P{ESTADO_ALERTA}), ''), 'Todos') AS estado_alerta,
     NULLIF(NULLIF(TRIM($P{COMISARIA}), ''), 'Todas') AS comisaria,
     NULLIF(NULLIF(TRIM($P{ESTADO_DESPACHO}), ''), 'Todos') AS estado_despacho,
+    NULLIF(NULLIF(TRIM($P{ESTADO_CERCO}), ''), 'Todos') AS estado_cerco,
     NULLIF(TRIM($P{BUS}), '') AS bus,
     COALESCE(NULLIF(TRIM($P{MODO_BUS}), ''), 'Contiene') AS modo_bus,
     NULLIF(TRIM($P{OPERADOR}), '') AS operador,
     COALESCE($P{CUALQUIERA}, FALSE) AS cualquiera,
-    COALESCE(NULLIF(TRIM($P{ORDEN}), ''), 'Fecha de despacho') AS orden,
+    COALESCE(NULLIF(TRIM($P{ORDEN}), ''), 'Fecha (despacho/alerta)') AS orden,
     COALESCE($P{DESCENDENTE}, TRUE) AS descendente
 ) p
 WHERE (p.desde IS NULL OR p.hasta IS NULL OR CAST(p.desde AS DATE) <= CAST(p.hasta AS DATE))
 AND (
     (p.cualquiera = FALSE AND
-        (p.desde IS NULL OR d.fecha_hora >= CAST(p.desde AS DATE)) AND
-        (p.hasta IS NULL OR d.fecha_hora < DATE_ADD(CAST(p.hasta AS DATE), INTERVAL 1 DAY)) AND
-        (p.comisaria IS NULL OR cm.nombre = p.comisaria) AND
-        (p.estado_despacho IS NULL OR d.estado = p.estado_despacho) AND
+        (p.desde IS NULL OR COALESCE(d.fecha_hora, a.fecha_hora) >= CAST(p.desde AS DATE)) AND
+        (p.hasta IS NULL OR COALESCE(d.fecha_hora, a.fecha_hora) < DATE_ADD(CAST(p.hasta AS DATE), INTERVAL 1 DAY)) AND
+        (p.estado_alerta IS NULL OR a.estado = p.estado_alerta) AND
+        (p.comisaria IS NULL OR COALESCE(cm.nombre, 'Sin comisaría') = p.comisaria) AND
+        (p.estado_despacho IS NULL OR COALESCE(d.estado, 'Sin despacho') = p.estado_despacho) AND
+        (p.estado_cerco IS NULL OR COALESCE(cp.estado, 'Sin cerco') = p.estado_cerco) AND
         (p.bus IS NULL OR
             b.placa LIKE CONCAT(IF(p.modo_bus = 'Empieza en', '', '%'), REPLACE(REPLACE(REPLACE(p.bus, '!', '!!'), '%', '!%'), '_', '!_'), IF(p.modo_bus = 'Termina en', '', '%')) ESCAPE '!' OR
             b.codigo_unidad LIKE CONCAT(IF(p.modo_bus = 'Empieza en', '', '%'), REPLACE(REPLACE(REPLACE(p.bus, '!', '!!'), '%', '!%'), '_', '!_'), IF(p.modo_bus = 'Termina en', '', '%')) ESCAPE '!'
         ) AND
-        (p.operador IS NULL OR CONCAT(o.nombres, ' ', o.apellidos) LIKE CONCAT('%', REPLACE(REPLACE(REPLACE(p.operador, '!', '!!'), '%', '!%'), '_', '!_'), '%') ESCAPE '!')
+        (p.operador IS NULL OR COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador') LIKE CONCAT('%', REPLACE(REPLACE(REPLACE(p.operador, '!', '!!'), '%', '!%'), '_', '!_'), '%') ESCAPE '!')
     ) OR
     (p.cualquiera = TRUE AND (
-        (p.desde IS NULL AND p.hasta IS NULL AND p.comisaria IS NULL AND p.estado_despacho IS NULL AND p.bus IS NULL AND p.operador IS NULL) OR
-        ((p.desde IS NOT NULL OR p.hasta IS NOT NULL) AND (p.desde IS NULL OR d.fecha_hora >= CAST(p.desde AS DATE)) AND (p.hasta IS NULL OR d.fecha_hora < DATE_ADD(CAST(p.hasta AS DATE), INTERVAL 1 DAY))) OR
-        (p.comisaria IS NOT NULL AND cm.nombre = p.comisaria) OR
-        (p.estado_despacho IS NOT NULL AND d.estado = p.estado_despacho) OR
+        (p.desde IS NULL AND p.hasta IS NULL AND p.estado_alerta IS NULL AND p.comisaria IS NULL AND p.estado_despacho IS NULL AND p.estado_cerco IS NULL AND p.bus IS NULL AND p.operador IS NULL) OR
+        ((p.desde IS NOT NULL OR p.hasta IS NOT NULL) AND (p.desde IS NULL OR COALESCE(d.fecha_hora, a.fecha_hora) >= CAST(p.desde AS DATE)) AND (p.hasta IS NULL OR COALESCE(d.fecha_hora, a.fecha_hora) < DATE_ADD(CAST(p.hasta AS DATE), INTERVAL 1 DAY))) OR
+        (p.estado_alerta IS NOT NULL AND a.estado = p.estado_alerta) OR
+        (p.comisaria IS NOT NULL AND COALESCE(cm.nombre, 'Sin comisaría') = p.comisaria) OR
+        (p.estado_despacho IS NOT NULL AND COALESCE(d.estado, 'Sin despacho') = p.estado_despacho) OR
+        (p.estado_cerco IS NOT NULL AND COALESCE(cp.estado, 'Sin cerco') = p.estado_cerco) OR
         (p.bus IS NOT NULL AND (
             b.placa LIKE CONCAT(IF(p.modo_bus = 'Empieza en', '', '%'), REPLACE(REPLACE(REPLACE(p.bus, '!', '!!'), '%', '!%'), '_', '!_'), IF(p.modo_bus = 'Termina en', '', '%')) ESCAPE '!' OR
             b.codigo_unidad LIKE CONCAT(IF(p.modo_bus = 'Empieza en', '', '%'), REPLACE(REPLACE(REPLACE(p.bus, '!', '!!'), '%', '!%'), '_', '!_'), IF(p.modo_bus = 'Termina en', '', '%')) ESCAPE '!'
         )) OR
-        (p.operador IS NOT NULL AND CONCAT(o.nombres, ' ', o.apellidos) LIKE CONCAT('%', REPLACE(REPLACE(REPLACE(p.operador, '!', '!!'), '%', '!%'), '_', '!_'), '%') ESCAPE '!')
+        (p.operador IS NOT NULL AND COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador') LIKE CONCAT('%', REPLACE(REPLACE(REPLACE(p.operador, '!', '!!'), '%', '!%'), '_', '!_'), '%') ESCAPE '!')
     ))
 )
 ORDER BY
-    CASE WHEN p.orden = 'Fecha de despacho' AND p.descendente = FALSE THEN d.fecha_hora END ASC,
-    CASE WHEN p.orden = 'Fecha de despacho' AND p.descendente = TRUE THEN d.fecha_hora END DESC,
+    CASE WHEN p.orden = 'Fecha (despacho/alerta)' AND p.descendente = FALSE THEN COALESCE(d.fecha_hora, a.fecha_hora) END ASC,
+    CASE WHEN p.orden = 'Fecha (despacho/alerta)' AND p.descendente = TRUE THEN COALESCE(d.fecha_hora, a.fecha_hora) END DESC,
     CASE
-        WHEN p.orden = 'Comisaría' AND p.descendente = FALSE THEN cm.nombre
+        WHEN p.orden = 'Comisaría' AND p.descendente = FALSE THEN COALESCE(cm.nombre, 'Sin comisaría')
         WHEN p.orden = 'Unidad / Placa' AND p.descendente = FALSE THEN CONCAT(b.codigo_unidad, ' / ', b.placa)
-        WHEN p.orden = 'Operador' AND p.descendente = FALSE THEN CONCAT(o.nombres, ' ', o.apellidos)
-        WHEN p.orden = 'Estado de despacho' AND p.descendente = FALSE THEN d.estado
+        WHEN p.orden = 'Operador' AND p.descendente = FALSE THEN COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador')
+        WHEN p.orden = 'Estado de alerta' AND p.descendente = FALSE THEN a.estado
+        WHEN p.orden = 'Estado de despacho' AND p.descendente = FALSE THEN COALESCE(d.estado, 'Sin despacho')
         WHEN p.orden = 'Estado de cerco' AND p.descendente = FALSE THEN COALESCE(cp.estado, 'Sin cerco')
     END ASC,
     CASE
-        WHEN p.orden = 'Comisaría' AND p.descendente = TRUE THEN cm.nombre
+        WHEN p.orden = 'Comisaría' AND p.descendente = TRUE THEN COALESCE(cm.nombre, 'Sin comisaría')
         WHEN p.orden = 'Unidad / Placa' AND p.descendente = TRUE THEN CONCAT(b.codigo_unidad, ' / ', b.placa)
-        WHEN p.orden = 'Operador' AND p.descendente = TRUE THEN CONCAT(o.nombres, ' ', o.apellidos)
-        WHEN p.orden = 'Estado de despacho' AND p.descendente = TRUE THEN d.estado
+        WHEN p.orden = 'Operador' AND p.descendente = TRUE THEN COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador')
+        WHEN p.orden = 'Estado de alerta' AND p.descendente = TRUE THEN a.estado
+        WHEN p.orden = 'Estado de despacho' AND p.descendente = TRUE THEN COALESCE(d.estado, 'Sin despacho')
         WHEN p.orden = 'Estado de cerco' AND p.descendente = TRUE THEN COALESCE(cp.estado, 'Sin cerco')
     END DESC,
-    d.id_despacho ASC
+    a.id_alerta ASC
     ]]></queryString>
-    <field name="id_despacho" class="java.lang.Integer"/>
     <field name="id_alerta" class="java.lang.Integer"/>
-    <field name="fecha_despacho" class="java.sql.Timestamp"/>
+    <field name="fecha_referencia" class="java.sql.Timestamp"/>
     <field name="unidad_placa" class="java.lang.String"/>
+    <field name="estado_alerta" class="java.lang.String"/>
     <field name="comisaria" class="java.lang.String"/>
     <field name="operador" class="java.lang.String"/>
     <field name="estado_despacho" class="java.lang.String"/>
@@ -302,12 +324,14 @@ ORDER BY
                 </textElement>
                 <textFieldExpression><![CDATA["Desde: " + ($P{DESDE} == null || $P{DESDE}.trim().isEmpty() ? "sin límite" : $P{DESDE}.trim())
 + "   |   Hasta: " + ($P{HASTA} == null || $P{HASTA}.trim().isEmpty() ? "sin límite" : $P{HASTA}.trim())
++ "   |   Alerta: " + ($P{ESTADO_ALERTA} == null || $P{ESTADO_ALERTA}.trim().isEmpty() ? "Todos" : $P{ESTADO_ALERTA}.trim())
 + "   |   Comisaría: " + ($P{COMISARIA} == null || $P{COMISARIA}.trim().isEmpty() ? "Todas" : $P{COMISARIA}.trim())
-+ "   |   Estado auxilio: " + ($P{ESTADO_DESPACHO} == null || $P{ESTADO_DESPACHO}.trim().isEmpty() ? "Todos" : $P{ESTADO_DESPACHO}.trim())
++ "   |   Auxilio: " + ($P{ESTADO_DESPACHO} == null || $P{ESTADO_DESPACHO}.trim().isEmpty() ? "Todos" : $P{ESTADO_DESPACHO}.trim())
++ "   |   Cerco: " + ($P{ESTADO_CERCO} == null || $P{ESTADO_CERCO}.trim().isEmpty() ? "Todos" : $P{ESTADO_CERCO}.trim())
 + "\nBus/Placa: " + ($P{BUS} == null || $P{BUS}.trim().isEmpty() ? "todos" : ($P{MODO_BUS} == null ? "Contiene" : $P{MODO_BUS}) + " " + $P{BUS}.trim())
-+ "   |   Operador contiene: " + ($P{OPERADOR} == null || $P{OPERADOR}.trim().isEmpty() ? "todos" : $P{OPERADOR}.trim())
++ "   |   Operador: " + ($P{OPERADOR} == null || $P{OPERADOR}.trim().isEmpty() ? "todos" : $P{OPERADOR}.trim())
 + "   |   Unión: " + (Boolean.TRUE.equals($P{CUALQUIERA}) ? "Cualquiera (O)" : "Todas (Y)")
-+ "   |   Orden: " + ($P{ORDEN} == null || $P{ORDEN}.trim().isEmpty() ? "Fecha de despacho" : $P{ORDEN}) + (Boolean.FALSE.equals($P{DESCENDENTE}) ? " ascendente" : " descendente")]]></textFieldExpression>
++ "   |   Orden: " + ($P{ORDEN} == null || $P{ORDEN}.trim().isEmpty() ? "Fecha (despacho/alerta)" : $P{ORDEN}) + (Boolean.FALSE.equals($P{DESCENDENTE}) ? " ascendente" : " descendente")]]></textFieldExpression>
             </textField>
         </band>
     </title>
@@ -321,11 +345,11 @@ ORDER BY
                 <text><![CDATA[02]]></text>
             </staticText>
             <staticText>
-                <reportElement x="28" y="1" width="440" height="16" forecolor="#24354A"/>
+                <reportElement x="28" y="1" width="520" height="16" forecolor="#24354A"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="10" isBold="true"/>
                 </textElement>
-                <text><![CDATA[SEGUIMIENTO DE DESPACHO DE AUXILIO Y CERCO PREVENTIVO]]></text>
+                <text><![CDATA[SEGUIMIENTO DE ALERTAS, DESPACHO DE AUXILIO Y CERCO PREVENTIVO]]></text>
             </staticText>
             <rectangle radius="5">
                 <reportElement mode="Opaque" x="0" y="20" width="786" height="28" backcolor="#1C2D43"/>
@@ -336,56 +360,56 @@ ORDER BY
                 <graphicElement><pen lineWidth="0.0"/></graphicElement>
             </rectangle>
             <staticText>
-                <reportElement x="8" y="25" width="44" height="18" forecolor="#FFFFFF"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="SansSerif" size="8" isBold="true"/>
-                </textElement>
-                <text><![CDATA[DESP.]]></text>
-            </staticText>
-            <staticText>
-                <reportElement x="56" y="25" width="44" height="18" forecolor="#FFFFFF"/>
+                <reportElement x="6" y="25" width="42" height="18" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <text><![CDATA[ALERTA]]></text>
             </staticText>
             <staticText>
-                <reportElement x="106" y="25" width="98" height="18" forecolor="#FFFFFF"/>
+                <reportElement x="54" y="25" width="92" height="18" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
-                <text><![CDATA[FECHA DESPACHO]]></text>
+                <text><![CDATA[FECHA REF.]]></text>
             </staticText>
             <staticText>
-                <reportElement x="210" y="25" width="102" height="18" forecolor="#FFFFFF"/>
+                <reportElement x="152" y="25" width="96" height="18" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <text><![CDATA[UNIDAD / PLACA]]></text>
             </staticText>
             <staticText>
-                <reportElement x="318" y="25" width="156" height="18" forecolor="#FFFFFF"/>
+                <reportElement x="254" y="25" width="80" height="18" forecolor="#FFFFFF"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ESTADO ALERTA]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="340" y="25" width="144" height="18" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <text><![CDATA[COMISARÍA ASIGNADA]]></text>
             </staticText>
             <staticText>
-                <reportElement x="480" y="25" width="130" height="18" forecolor="#FFFFFF"/>
+                <reportElement x="490" y="25" width="122" height="18" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <text><![CDATA[OPERADOR]]></text>
             </staticText>
             <staticText>
-                <reportElement x="616" y="25" width="80" height="18" forecolor="#FFFFFF"/>
+                <reportElement x="618" y="25" width="80" height="18" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <text><![CDATA[AUXILIO]]></text>
             </staticText>
             <staticText>
-                <reportElement x="702" y="25" width="78" height="18" forecolor="#FFFFFF"/>
+                <reportElement x="704" y="25" width="76" height="18" forecolor="#FFFFFF"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
@@ -400,68 +424,72 @@ ORDER BY
                 <graphicElement><pen lineWidth="0.0"/></graphicElement>
             </rectangle>
             <rectangle radius="6">
-                <reportElement mode="Opaque" x="8" y="9" width="44" height="23" backcolor="#E5EDF2"/>
+                <reportElement mode="Opaque" x="6" y="9" width="42" height="23" backcolor="#E5EDF2"/>
                 <graphicElement><pen lineWidth="0.0"/></graphicElement>
             </rectangle>
             <textField isBlankWhenNull="true">
-                <reportElement x="10" y="10" width="40" height="21" forecolor="#1C2D43"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="SansSerif" size="8" isBold="true"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{id_despacho}]]></textFieldExpression>
-            </textField>
-            <textField isBlankWhenNull="true">
-                <reportElement x="56" y="8" width="44" height="25" forecolor="#24354A"/>
+                <reportElement x="8" y="10" width="38" height="21" forecolor="#1C2D43"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA["#" + $F{id_alerta}]]></textFieldExpression>
             </textField>
             <textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="true">
-                <reportElement x="106" y="8" width="98" height="25" forecolor="#24354A"/>
+                <reportElement x="54" y="8" width="92" height="25" forecolor="#24354A"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$F{fecha_despacho}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{fecha_referencia}]]></textFieldExpression>
             </textField>
             <textField textAdjust="StretchHeight" isBlankWhenNull="true">
-                <reportElement x="210" y="8" width="102" height="25" forecolor="#1C2D43"/>
+                <reportElement x="152" y="8" width="96" height="25" forecolor="#1C2D43"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{unidad_placa}]]></textFieldExpression>
             </textField>
+            <rectangle radius="6">
+                <reportElement mode="Opaque" x="254" y="9" width="80" height="23" backcolor="#FEF3C7"/>
+                <graphicElement><pen lineWidth="0.0"/></graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement x="256" y="10" width="76" height="21" forecolor="#92400E"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{estado_alerta}]]></textFieldExpression>
+            </textField>
             <textField textAdjust="StretchHeight" isBlankWhenNull="true">
-                <reportElement x="318" y="8" width="156" height="25" forecolor="#24354A"/>
+                <reportElement x="340" y="8" width="144" height="25" forecolor="#24354A"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{comisaria}]]></textFieldExpression>
             </textField>
             <textField textAdjust="StretchHeight" isBlankWhenNull="true">
-                <reportElement x="480" y="8" width="130" height="25" forecolor="#24354A"/>
+                <reportElement x="490" y="8" width="122" height="25" forecolor="#24354A"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{operador}]]></textFieldExpression>
             </textField>
             <rectangle radius="6">
-                <reportElement mode="Opaque" x="616" y="9" width="80" height="23" backcolor="#FBE8ED"/>
+                <reportElement mode="Opaque" x="618" y="9" width="80" height="23" backcolor="#FBE8ED"/>
                 <graphicElement><pen lineWidth="0.0"/></graphicElement>
             </rectangle>
             <textField isBlankWhenNull="true">
-                <reportElement x="618" y="10" width="76" height="21" forecolor="#A50F2C"/>
+                <reportElement x="620" y="10" width="76" height="21" forecolor="#A50F2C"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{estado_despacho}]]></textFieldExpression>
             </textField>
             <rectangle radius="6">
-                <reportElement mode="Opaque" x="702" y="9" width="78" height="23" backcolor="#E0F2FE"/>
+                <reportElement mode="Opaque" x="704" y="9" width="76" height="23" backcolor="#E0F2FE"/>
                 <graphicElement><pen lineWidth="0.0"/></graphicElement>
             </rectangle>
             <textField isBlankWhenNull="true">
-                <reportElement x="704" y="10" width="74" height="21" forecolor="#0E7490"/>
+                <reportElement x="706" y="10" width="72" height="21" forecolor="#0E7490"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="SansSerif" size="8" isBold="true"/>
                 </textElement>

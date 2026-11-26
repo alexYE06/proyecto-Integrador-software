@@ -26,10 +26,10 @@ public class Consulta02Service {
     public static final String RUTA_PLANTILLA = "/reports/Consulta02.jrxml";
 
     public static final String[] COLUMNAS = {
-            "Despacho",
             "Alerta",
-            "Fecha despacho",
+            "Fecha despacho/alerta",
             "Unidad / Placa",
+            "Estado alerta",
             "Comisaría asignada",
             "Operador",
             "Estado auxilio",
@@ -37,10 +37,11 @@ public class Consulta02Service {
     };
 
     public static final String[] ORDENES = {
-            "Fecha de despacho",
+            "Fecha (despacho/alerta)",
             "Comisaría",
             "Unidad / Placa",
             "Operador",
+            "Estado de alerta",
             "Estado de despacho",
             "Estado de cerco"
     };
@@ -50,8 +51,10 @@ public class Consulta02Service {
     public static String resumen(Filtro f) {
         String desde = (f.desde() == null || f.desde().isBlank()) ? "sin límite" : f.desde().trim();
         String hasta = (f.hasta() == null || f.hasta().isBlank()) ? "sin límite" : f.hasta().trim();
+        String estAlerta = (f.estadoAlerta() == null || f.estadoAlerta().isBlank()) ? "Todos" : f.estadoAlerta().trim();
         String comisaria = (f.comisaria() == null || f.comisaria().isBlank()) ? "Todas" : f.comisaria().trim();
-        String estado = (f.estadoDespacho() == null || f.estadoDespacho().isBlank()) ? "Todos" : f.estadoDespacho().trim();
+        String estDesp = (f.estadoDespacho() == null || f.estadoDespacho().isBlank()) ? "Todos" : f.estadoDespacho().trim();
+        String estCerco = (f.estadoCerco() == null || f.estadoCerco().isBlank()) ? "Todos" : f.estadoCerco().trim();
         String modoBus = (f.modoBus() == null || f.modoBus().isBlank()) ? "Contiene" : f.modoBus().trim();
         String bus = (f.bus() == null || f.bus().isBlank()) ? "todos" : modoBus + " " + f.bus().trim();
         String operador = (f.operador() == null || f.operador().isBlank()) ? "todos" : f.operador().trim();
@@ -59,10 +62,12 @@ public class Consulta02Service {
 
         return "Desde: " + desde
                 + " | Hasta: " + hasta
+                + " | Alerta: " + estAlerta
                 + " | Comisaría: " + comisaria
-                + " | Estado auxilio: " + estado
+                + " | Auxilio: " + estDesp
+                + " | Cerco: " + estCerco
                 + " | Bus/Placa: " + bus
-                + " | Operador contiene: " + operador
+                + " | Operador: " + operador
                 + " | Unión: " + (f.cualquiera() ? "O" : "Y")
                 + " | Orden: " + ordenNombre + (f.desc() ? " descendente" : " ascendente");
     }
@@ -86,14 +91,15 @@ public class Consulta02Service {
     }
 
     public static Map<String, Object> construirParametros(Filtro f, String baseDatos) {
-        // Valida fechas, rango e índice de orden antes de invocar a JasperReports
         Consulta02DAO.construir(f);
 
         Map<String, Object> params = new HashMap<>();
         params.put("DESDE", f.desde() == null ? "" : f.desde().trim());
         params.put("HASTA", f.hasta() == null ? "" : f.hasta().trim());
+        params.put("ESTADO_ALERTA", (f.estadoAlerta() == null || f.estadoAlerta().isBlank()) ? "Todos" : f.estadoAlerta().trim());
         params.put("COMISARIA", (f.comisaria() == null || f.comisaria().isBlank()) ? "Todas" : f.comisaria().trim());
         params.put("ESTADO_DESPACHO", (f.estadoDespacho() == null || f.estadoDespacho().isBlank()) ? "Todos" : f.estadoDespacho().trim());
+        params.put("ESTADO_CERCO", (f.estadoCerco() == null || f.estadoCerco().isBlank()) ? "Todos" : f.estadoCerco().trim());
         params.put("BUS", f.bus() == null ? "" : f.bus().trim());
         params.put("MODO_BUS", (f.modoBus() == null || f.modoBus().isBlank()) ? "Contiene" : f.modoBus().trim());
         params.put("OPERADOR", f.operador() == null ? "" : f.operador().trim());
@@ -104,9 +110,6 @@ public class Consulta02Service {
         return params;
     }
 
-    /**
-     * Compila /reports/Consulta02.jrxml y ejecuta su consulta SQL parametrizada en MySQL mediante JasperReports.
-     */
     public static JasperPrint generarReporte(Filtro f) throws Exception {
         Consulta02DAO.construir(f);
         JasperReport jasperReport = obtenerPlantillaCompilada();
@@ -119,9 +122,6 @@ public class Consulta02Service {
         }
     }
 
-    /**
-     * Genera el reporte con JasperReports y lo exporta de forma atómica a un archivo PDF.
-     */
     public static void pdf(Filtro f, Path destino) throws Exception {
         JasperPrint jasperPrint = generarReporte(f);
         Path dirPadre = destino.toAbsolutePath().getParent();

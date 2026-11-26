@@ -21,8 +21,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Consulta 02 multitabla (6 tablas) integrada con SQL parametrizado y JasperReports (PDF / Vista previa).
- * Tablas: despacho_auxilio + alerta + comisaria + operador + bus + cerco_preventivo.
+ * Consulta 02 multitabla (6 tablas con LEFT JOIN desde alerta) integrada con SQL parametrizado y JasperReports.
+ * Tablas: alerta + bus + despacho_auxilio + comisaria + operador + cerco_preventivo.
  */
 public class Consulta02 extends JFrame {
 
@@ -30,8 +30,10 @@ public class Consulta02 extends JFrame {
 
     private final JTextField desde = new JTextField();
     private final JTextField hasta = new JTextField();
-    private final JComboBox<String> comisaria = new JComboBox<>(new String[]{"Todas"});
-    private final JComboBox<String> estadoDespacho = new JComboBox<>(new String[]{"Todos"});
+    private final JComboBox<String> estadoAlerta = new JComboBox<>(new String[]{"Todos"});
+    private final JComboBox<String> comisaria = new JComboBox<>(new String[]{"Todas", "Sin comisaría"});
+    private final JComboBox<String> estadoDespacho = new JComboBox<>(new String[]{"Todos", "Sin despacho"});
+    private final JComboBox<String> estadoCerco = new JComboBox<>(new String[]{"Todos", "Sin cerco"});
     private final JTextField bus = new JTextField();
     private final JComboBox<String> modoBus = new JComboBox<>(new String[]{"Contiene", "Empieza en", "Termina en"});
     private final JTextField operador = new JTextField();
@@ -43,7 +45,7 @@ public class Consulta02 extends JFrame {
     private final JButton btnPrevisualizar = crearBoton("Previsualizar JasperReport", new Color(37, 99, 235), Color.WHITE);
     private final JButton btnExportarPdf = crearBoton("Exportar PDF", new Color(225, 29, 72), Color.WHITE);
     private final JButton btnLimpiar = crearBoton("Limpiar filtros", new Color(241, 245, 249), new Color(15, 23, 42));
-    private final JLabel mensaje = new JLabel("Cargando comisarías y estados de despacho de la base de datos...");
+    private final JLabel mensaje = new JLabel("Cargando catálogos desde MySQL...");
 
     public static Connection conexion() throws SQLException {
         return conexion.ConexionBD.obtenerConexion();
@@ -55,16 +57,15 @@ public class Consulta02 extends JFrame {
         getContentPane().setBackground(new Color(248, 250, 252));
         setLayout(new BorderLayout(0, 0));
 
-        // Cabecera institucional
         JPanel pnlHeader = new JPanel(new BorderLayout(8, 4));
         pnlHeader.setBackground(new Color(20, 32, 51));
-        pnlHeader.setBorder(new EmptyBorder(18, 26, 18, 26));
+        pnlHeader.setBorder(new EmptyBorder(16, 24, 16, 24));
 
         JLabel lblTitulo = new JLabel("SAT-CARMEN · Consulta 02: Despacho de Auxilio y Cercos Preventivos");
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 18));
         lblTitulo.setForeground(Color.WHITE);
 
-        JLabel lblSubtitulo = new JLabel("Consulta SQL de 6 tablas (despacho_auxilio + alerta + comisaria + operador + bus + cerco_preventivo) integrada con JasperReports");
+        JLabel lblSubtitulo = new JLabel("Consulta SQL de 6 tablas (alerta + bus + despacho_auxilio + comisaria + operador + cerco_preventivo) integrada con JasperReports");
         lblSubtitulo.setFont(new Font("SansSerif", Font.PLAIN, 12));
         lblSubtitulo.setForeground(new Color(203, 213, 225));
 
@@ -72,23 +73,24 @@ public class Consulta02 extends JFrame {
         pnlHeader.add(lblSubtitulo, BorderLayout.SOUTH);
         add(pnlHeader, BorderLayout.NORTH);
 
-        // Tarjeta central de filtros
-        desde.setToolTipText("Formato AAAA-MM-DD (ejemplo: 2026-09-25). Dejar vacío para no restringir.");
-        hasta.setToolTipText("Formato AAAA-MM-DD (incluye todo el día indicado). Dejar vacío para no restringir.");
+        desde.setToolTipText("Formato AAAA-MM-DD (ejemplo: 2026-09-25). Vacío = sin límite inicial.");
+        hasta.setToolTipText("Formato AAAA-MM-DD (incluye todo el día indicado). Vacío = sin límite final.");
         bus.setToolTipText("Placa (ej. ABC-123) o código de unidad (ej. BUS-001).");
-        operador.setToolTipText("Nombre o apellido del operador que despachó el auxilio.");
+        operador.setToolTipText("Nombre o apellido del operador asignado o que despachó el auxilio.");
 
-        JPanel pnlCard = new JPanel(new GridLayout(0, 2, 16, 12));
+        JPanel pnlCard = new JPanel(new GridLayout(0, 2, 16, 10));
         pnlCard.setBackground(Color.WHITE);
         pnlCard.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(new Color(226, 232, 240), 1),
-                new EmptyBorder(20, 24, 20, 24)
+                new EmptyBorder(18, 22, 18, 22)
         ));
 
-        agregarCampo(pnlCard, "Desde despacho (AAAA-MM-DD, opcional):", desde);
-        agregarCampo(pnlCard, "Hasta despacho (AAAA-MM-DD, inclusivo):", hasta);
+        agregarCampo(pnlCard, "Desde fecha (AAAA-MM-DD, opcional):", desde);
+        agregarCampo(pnlCard, "Hasta fecha (AAAA-MM-DD, inclusivo):", hasta);
+        agregarCampo(pnlCard, "Estado de la alerta:", estadoAlerta);
         agregarCampo(pnlCard, "Comisaría asignada:", comisaria);
         agregarCampo(pnlCard, "Estado del despacho de auxilio:", estadoDespacho);
+        agregarCampo(pnlCard, "Estado del cerco preventivo:", estadoCerco);
         agregarCampo(pnlCard, "Placa o unidad del bus:", bus);
         agregarCampo(pnlCard, "Coincidencia de placa / unidad:", modoBus);
         agregarCampo(pnlCard, "Nombre del operador contiene:", operador);
@@ -102,11 +104,10 @@ public class Consulta02 extends JFrame {
 
         JPanel pnlCentro = new JPanel(new BorderLayout());
         pnlCentro.setOpaque(false);
-        pnlCentro.setBorder(new EmptyBorder(18, 24, 12, 24));
+        pnlCentro.setBorder(new EmptyBorder(16, 24, 10, 24));
         pnlCentro.add(pnlCard, BorderLayout.CENTER);
         add(pnlCentro, BorderLayout.CENTER);
 
-        // Pie de acciones y estado
         JPanel pnlBotones = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         pnlBotones.setOpaque(false);
         pnlBotones.add(btnConsultar);
@@ -119,7 +120,7 @@ public class Consulta02 extends JFrame {
 
         JPanel pnlPie = new JPanel(new BorderLayout(8, 10));
         pnlPie.setOpaque(false);
-        pnlPie.setBorder(new EmptyBorder(4, 24, 20, 24));
+        pnlPie.setBorder(new EmptyBorder(4, 24, 18, 24));
         pnlPie.add(pnlBotones, BorderLayout.NORTH);
         pnlPie.add(mensaje, BorderLayout.SOUTH);
         add(pnlPie, BorderLayout.SOUTH);
@@ -129,7 +130,7 @@ public class Consulta02 extends JFrame {
         btnPrevisualizar.addActionListener(e -> previsualizarJasper(this, leerFiltro()));
         btnExportarPdf.addActionListener(e -> exportarPdfJasper(this, leerFiltro()));
 
-        setSize(880, 610);
+        setSize(900, 680);
         setLocationRelativeTo(null);
         cargarCatalogosIniciales();
     }
@@ -167,13 +168,19 @@ public class Consulta02 extends JFrame {
             protected void done() {
                 try {
                     Catalogos cat = get();
+                    for (String ea : cat.estadosAlerta()) {
+                        estadoAlerta.addItem(ea);
+                    }
                     for (String c : cat.comisarias()) {
                         comisaria.addItem(c);
                     }
                     for (String est : cat.estadosDespacho()) {
                         estadoDespacho.addItem(est);
                     }
-                    mensaje.setText("Conexión lista. Los campos vacíos no restringen la consulta.");
+                    for (String ec : cat.estadosCerco()) {
+                        estadoCerco.addItem(ec);
+                    }
+                    mensaje.setText("Conexión lista. Incluye todas las alertas (con o sin despacho/cerco). Usa 'Cualquiera (O)' para ampliar resultados.");
                 } catch (Exception ex) {
                     mensaje.setText("No se cargaron catálogos iniciales. Verifica la conexión MySQL.");
                 }
@@ -184,8 +191,10 @@ public class Consulta02 extends JFrame {
     private void limpiarFiltros() {
         desde.setText("");
         hasta.setText("");
+        estadoAlerta.setSelectedIndex(0);
         comisaria.setSelectedIndex(0);
         estadoDespacho.setSelectedIndex(0);
+        estadoCerco.setSelectedIndex(0);
         bus.setText("");
         modoBus.setSelectedIndex(0);
         operador.setText("");
@@ -199,8 +208,10 @@ public class Consulta02 extends JFrame {
         return new Filtro(
                 desde.getText().trim(),
                 hasta.getText().trim(),
+                (String) estadoAlerta.getSelectedItem(),
                 (String) comisaria.getSelectedItem(),
                 (String) estadoDespacho.getSelectedItem(),
+                (String) estadoCerco.getSelectedItem(),
                 bus.getText().trim(),
                 (String) modoBus.getSelectedItem(),
                 operador.getText().trim(),
@@ -252,7 +263,7 @@ public class Consulta02 extends JFrame {
                 try {
                     Resultado r = get();
                     new Resultados(r).setVisible(true);
-                    mensaje.setText("Consulta completada: " + r.filas().size() + " despachos encontrados.");
+                    mensaje.setText("Consulta completada: " + r.filas().size() + " registros encontrados.");
                 } catch (Exception ex) {
                     Throwable causa = ex.getCause() != null ? ex.getCause() : ex;
                     mensaje.setText("No se pudo ejecutar la consulta.");
@@ -390,7 +401,7 @@ public class Consulta02 extends JFrame {
             tabla.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
             tabla.getTableHeader().setPreferredSize(new Dimension(0, 32));
 
-            int[] anchos = {75, 65, 145, 140, 240, 200, 120, 120};
+            int[] anchos = {65, 145, 135, 115, 220, 185, 115, 115};
             for (int i = 0; i < anchos.length && i < tabla.getColumnModel().getColumnCount(); i++) {
                 tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
             }
@@ -402,11 +413,11 @@ public class Consulta02 extends JFrame {
                     new EmptyBorder(12, 18, 12, 18)
             ));
             JLabel lblResumen = new JLabel(Consulta02Service.resumen(r.filtro()));
-            lblResumen.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            lblResumen.setFont(new Font("SansSerif", Font.PLAIN, 11));
             lblResumen.setForeground(new Color(30, 41, 59));
             JLabel lblConteo = new JLabel(
-                    r.filas().size() + " despachos encontrados"
-                    + (r.filas().isEmpty() ? " — Sin coincidencias para los filtros seleccionados." : " (6 tablas SQL sincronizadas con JasperReports).")
+                    r.filas().size() + " registros encontrados"
+                    + (r.filas().isEmpty() ? " — Sin coincidencias para los filtros seleccionados." : " (6 tablas SQL con LEFT JOIN sincronizadas con JasperReports).")
             );
             lblConteo.setFont(new Font("SansSerif", Font.BOLD, 12));
             lblConteo.setForeground(new Color(20, 32, 51));
@@ -518,7 +529,7 @@ public class Consulta02 extends JFrame {
                 }.execute();
             });
 
-            setSize(1240, 640);
+            setSize(1260, 650);
             setLocationRelativeTo(null);
         }
     }

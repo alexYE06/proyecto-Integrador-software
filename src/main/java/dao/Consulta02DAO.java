@@ -17,28 +17,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DAO parametrizado de solo lectura para la Consulta 02:
- * despacho_auxilio + alerta + comisaria + operador + bus + cerco_preventivo (6 tablas).
+ * DAO parametrizado de solo lectura para la Consulta 02 (6 tablas con LEFT JOIN desde alerta):
+ * alerta + bus + despacho_auxilio + comisaria + operador + cerco_preventivo.
  */
 public class Consulta02DAO {
 
     private static final String SQL_BASE =
-            "SELECT d.id_despacho, a.id_alerta, d.fecha_hora AS fecha_despacho, "
+            "SELECT a.id_alerta, "
+            + "COALESCE(d.fecha_hora, a.fecha_hora) AS fecha_referencia, "
             + "CONCAT(b.codigo_unidad, ' / ', b.placa) AS unidad_placa, "
-            + "cm.nombre AS comisaria, "
-            + "CONCAT(o.nombres, ' ', o.apellidos) AS operador, "
-            + "d.estado AS estado_despacho, "
+            + "a.estado AS estado_alerta, "
+            + "COALESCE(cm.nombre, 'Sin comisaría') AS comisaria, "
+            + "COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador') AS operador, "
+            + "COALESCE(d.estado, 'Sin despacho') AS estado_despacho, "
             + "COALESCE(cp.estado, 'Sin cerco') AS estado_cerco "
-            + "FROM despacho_auxilio d "
-            + "INNER JOIN alerta a ON a.id_alerta = d.id_alerta "
+            + "FROM alerta a "
             + "INNER JOIN bus b ON b.id_bus = a.id_bus "
-            + "INNER JOIN comisaria cm ON cm.id_comisaria = d.id_comisaria "
-            + "INNER JOIN operador o ON o.id_operador = d.id_operador "
+            + "LEFT JOIN despacho_auxilio d ON d.id_despacho = ("
+            + "SELECT d2.id_despacho FROM despacho_auxilio d2 "
+            + "WHERE d2.id_alerta = a.id_alerta "
+            + "ORDER BY d2.fecha_hora DESC, d2.id_despacho DESC LIMIT 1) "
+            + "LEFT JOIN comisaria cm ON cm.id_comisaria = d.id_comisaria "
+            + "LEFT JOIN operador o ON o.id_operador = COALESCE(d.id_operador, a.id_operador) "
             + "LEFT JOIN cerco_preventivo cp ON cp.id_cerco = ("
             + "SELECT cp2.id_cerco FROM cerco_preventivo cp2 "
-            + "WHERE cp2.id_alerta = d.id_alerta "
-            + "ORDER BY (cp2.id_comisaria = d.id_comisaria) DESC, cp2.fecha_inicio DESC, cp2.id_cerco DESC "
-            + "LIMIT 1)";
+            + "WHERE cp2.id_alerta = a.id_alerta "
+            + "ORDER BY (d.id_comisaria IS NOT NULL AND cp2.id_comisaria = d.id_comisaria) DESC, cp2.fecha_inicio DESC, cp2.id_cerco DESC LIMIT 1)";
 
     public static String patron(String texto, String modo) {
         String limpio = texto.replace("!", "!!").replace("%", "!%").replace("_", "!_");
@@ -55,8 +59,10 @@ public class Consulta02DAO {
         }
         String desdeTxt = f.desde() == null ? "" : f.desde().trim();
         String hastaTxt = f.hasta() == null ? "" : f.hasta().trim();
+        String estadoAlerta = (f.estadoAlerta() == null || f.estadoAlerta().isBlank()) ? "Todos" : f.estadoAlerta().trim();
         String comisaria = (f.comisaria() == null || f.comisaria().isBlank()) ? "Todas" : f.comisaria().trim();
         String estadoDespacho = (f.estadoDespacho() == null || f.estadoDespacho().isBlank()) ? "Todos" : f.estadoDespacho().trim();
+        String estadoCerco = (f.estadoCerco() == null || f.estadoCerco().isBlank()) ? "Todos" : f.estadoCerco().trim();
         String bus = f.bus() == null ? "" : f.bus().trim();
         String modoBus = (f.modoBus() == null || f.modoBus().isBlank()) ? "Contiene" : f.modoBus().trim();
         String operador = f.operador() == null ? "" : f.operador().trim();
@@ -64,7 +70,7 @@ public class Consulta02DAO {
         LocalDate ini = desdeTxt.isBlank() ? null : LocalDate.parse(desdeTxt);
         LocalDate fin = hastaTxt.isBlank() ? null : LocalDate.parse(hastaTxt);
         if (ini != null && fin != null && ini.isAfter(fin)) {
-            throw new IllegalArgumentException("La fecha inicial de despacho debe ser menor o igual que la final.");
+            throw new IllegalArgumentException("La fecha inicial debe ser menor o igual que la final.");
         }
 
         List<String> condiciones = new ArrayList<>();
@@ -73,25 +79,35 @@ public class Consulta02DAO {
 
         // El intervalo de fechas es una sola condición lógica: nunca se separan sus extremos con OR.
         if (ini != null && fin != null) {
-            condiciones.add("(d.fecha_hora >= ? AND d.fecha_hora < ?)");
+            condiciones.add("(COALESCE(d.fecha_hora, a.fecha_hora) >= ? AND COALESCE(d.fecha_hora, a.fecha_hora) < ?)");
             parametros.add(Timestamp.valueOf(ini.atStartOfDay()));
             parametros.add(Timestamp.valueOf(fin.plusDays(1).atStartOfDay()));
         } else if (ini != null) {
-            condiciones.add("d.fecha_hora >= ?");
+            condiciones.add("COALESCE(d.fecha_hora, a.fecha_hora) >= ?");
             parametros.add(Timestamp.valueOf(ini.atStartOfDay()));
         } else if (fin != null) {
-            condiciones.add("d.fecha_hora < ?");
+            condiciones.add("COALESCE(d.fecha_hora, a.fecha_hora) < ?");
             parametros.add(Timestamp.valueOf(fin.plusDays(1).atStartOfDay()));
         }
 
+        if (!estadoAlerta.equals("Todos")) {
+            condiciones.add("a.estado = ?");
+            parametros.add(estadoAlerta);
+        }
+
         if (!comisaria.equals("Todas")) {
-            condiciones.add("cm.nombre = ?");
+            condiciones.add("COALESCE(cm.nombre, 'Sin comisaría') = ?");
             parametros.add(comisaria);
         }
 
         if (!estadoDespacho.equals("Todos")) {
-            condiciones.add("d.estado = ?");
+            condiciones.add("COALESCE(d.estado, 'Sin despacho') = ?");
             parametros.add(estadoDespacho);
+        }
+
+        if (!estadoCerco.equals("Todos")) {
+            condiciones.add("COALESCE(cp.estado, 'Sin cerco') = ?");
+            parametros.add(estadoCerco);
         }
 
         if (!bus.isBlank()) {
@@ -102,7 +118,7 @@ public class Consulta02DAO {
         }
 
         if (!operador.isBlank()) {
-            condiciones.add("CONCAT(o.nombres, ' ', o.apellidos) LIKE ? ESCAPE '!'");
+            condiciones.add("COALESCE(CONCAT(o.nombres, ' ', o.apellidos), 'Sin operador') LIKE ? ESCAPE '!'");
             parametros.add(patron(operador, "Contiene"));
         }
 
@@ -111,16 +127,17 @@ public class Consulta02DAO {
         }
 
         String campoOrden = switch (f.orden()) {
-            case 0 -> "d.fecha_hora";
-            case 1 -> "cm.nombre";
+            case 0 -> "fecha_referencia";
+            case 1 -> "comisaria";
             case 2 -> "unidad_placa";
             case 3 -> "operador";
-            case 4 -> "d.estado";
-            case 5 -> "estado_cerco";
+            case 4 -> "a.estado";
+            case 5 -> "estado_despacho";
+            case 6 -> "estado_cerco";
             default -> throw new IllegalArgumentException("Criterio de ordenamiento inválido.");
         };
 
-        sql += " ORDER BY " + campoOrden + (f.desc() ? " DESC" : " ASC") + ", d.id_despacho ASC";
+        sql += " ORDER BY " + campoOrden + (f.desc() ? " DESC" : " ASC") + ", a.id_alerta ASC";
         return new Sentencia(sql, List.copyOf(parametros));
     }
 
@@ -137,7 +154,7 @@ public class Consulta02DAO {
                 while (rs.next()) {
                     Object[] fila = new Object[8];
                     for (int i = 0; i < 8; i++) {
-                        fila[i] = (i == 2) ? rs.getTimestamp(i + 1) : rs.getObject(i + 1);
+                        fila[i] = (i == 1) ? rs.getTimestamp(i + 1) : rs.getObject(i + 1);
                     }
                     filas.add(fila);
                 }
@@ -147,22 +164,31 @@ public class Consulta02DAO {
     }
 
     public static Catalogos cargarCatalogos() throws SQLException {
+        List<String> estadosAlerta = new ArrayList<>();
         List<String> comisarias = new ArrayList<>();
-        List<String> estados = new ArrayList<>();
+        List<String> estadosDespacho = new ArrayList<>();
+        List<String> estadosCerco = new ArrayList<>();
         try (Connection cn = ConexionBD.obtenerConexion();
              Statement st = cn.createStatement()) {
             st.setQueryTimeout(15);
+            try (ResultSet rs = st.executeQuery("SELECT DISTINCT estado FROM alerta ORDER BY estado")) {
+                while (rs.next()) estadosAlerta.add(rs.getString(1));
+            }
             try (ResultSet rs = st.executeQuery("SELECT DISTINCT nombre FROM comisaria ORDER BY nombre")) {
-                while (rs.next()) {
-                    comisarias.add(rs.getString(1));
-                }
+                while (rs.next()) comisarias.add(rs.getString(1));
             }
             try (ResultSet rs = st.executeQuery("SELECT DISTINCT estado FROM despacho_auxilio ORDER BY estado")) {
-                while (rs.next()) {
-                    estados.add(rs.getString(1));
-                }
+                while (rs.next()) estadosDespacho.add(rs.getString(1));
+            }
+            try (ResultSet rs = st.executeQuery("SELECT DISTINCT estado FROM cerco_preventivo ORDER BY estado")) {
+                while (rs.next()) estadosCerco.add(rs.getString(1));
             }
         }
-        return new Catalogos(List.copyOf(comisarias), List.copyOf(estados));
+        return new Catalogos(
+                List.copyOf(estadosAlerta),
+                List.copyOf(comisarias),
+                List.copyOf(estadosDespacho),
+                List.copyOf(estadosCerco)
+        );
     }
 }

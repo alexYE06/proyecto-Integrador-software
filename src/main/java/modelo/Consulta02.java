@@ -9,8 +9,10 @@ public final class Consulta02 {
     public record Filtro(
             String desde,
             String hasta,
+            String estadoAlerta,
             String comisaria,
             String estadoDespacho,
+            String estadoCerco,
             String bus,
             String modoBus,
             String operador,
@@ -23,5 +25,10 @@ public final class Consulta02 {
 
     public record Resultado(Filtro filtro, Sentencia sentencia, List<Object[]> filas) {}
 
-    public record Catalogos(List<String> comisarias, List<String> estadosDespacho) {}
+    public record Catalogos(
+            List<String> estadosAlerta,
+            List<String> comisarias,
+            List<String> estadosDespacho,
+            List<String> estadosCerco
+    ) {}
 }

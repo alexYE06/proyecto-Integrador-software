@@ -28,7 +28,7 @@ public class UiSmoke {
 
     public static void main(String[] args) throws Exception {
         Files.createDirectories(Path.of("target/evidencias"));
-        Consulta02.Filtro filtroDemo = new Consulta02.Filtro("", "", "Todas", "Todos", "", "Contiene", "", false, 0, true);
+        Consulta02.Filtro filtroDemo = new Consulta02.Filtro("", "", "Todos", "Todas", "Todos", "Todos", "", "Contiene", "", false, 0, true);
         Consulta02.Resultado res02 = Consulta02DAO.ejecutar(filtroDemo);
         JasperPrint print02 = Consulta02Service.generarReporte(filtroDemo);
         Consulta02Service.pdf(filtroDemo, Path.of("target/evidencias/Consulta02-datos_prueba.pdf"));
