@@ -39,7 +39,7 @@ public class LoginController implements ActionListener {
                 String estado = sql.getSQLState();
                 if ("28000".equals(estado)) {
                     mensaje = "MySQL no aceptó la clave de conexión.\n"
-                            + "Cierra el programa y vuelve a abrirlo. En la ventana negra escribe la clave de MySQL.\n"
+                            + "Pulsa Configurar MySQL para corregir la conexión guardada en este equipo.\n"
                             + "Esto no significa que la cuenta operador1 esté mal.";
                 } else if (estado != null && estado.startsWith("08")) {
                     mensaje = "No se pudo comunicar con MySQL.\n"
@@ -48,7 +48,8 @@ public class LoginController implements ActionListener {
                 }
                 mensaje += "\nCódigo de diagnóstico: " + sql.getErrorCode() + " / " + estado;
             }
-            JOptionPane.showMessageDialog(view, mensaje, "No se pudo abrir MySQL", JOptionPane.ERROR_MESSAGE);
+            int opcion = JOptionPane.showOptionDialog(view, mensaje, "No se pudo abrir MySQL", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{"Configurar MySQL", "Cerrar"}, "Configurar MySQL");
+            if (opcion == 0) new vista.ConfiguracionBDView(view).setVisible(true);
             return;
         }
 

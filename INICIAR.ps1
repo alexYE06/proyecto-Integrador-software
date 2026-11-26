@@ -1,19 +1,13 @@
-param([string]$DbHost='127.0.0.1',[int]$Port=3306,[string]$Database='sistema_alertas',[string]$DbUser='root')
+param([string]$DbHost='', [int]$Port=0, [string]$Database='', [string]$DbUser='')
 $ErrorActionPreference='Stop'
-$keys=@('DB_HOST','DB_PORT','DB_NAME','DB_USER','DB_PASSWORD')
-$before=@{}
-foreach($key in $keys){$before[$key]=[Environment]::GetEnvironmentVariable($key,'Process')}
+. (Join-Path $PSScriptRoot 'JAVA.ps1')
 Push-Location $PSScriptRoot
 try {
- if (!(Test-Path target/classes/vista/DemoSelectorView.class)) { & ./COMPILAR.ps1 }
- $secret=Read-Host 'Contraseña MySQL (solo para esta ejecución)' -AsSecureString
- $ptr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
- try {$env:DB_PASSWORD=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)}
- finally {[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)}
- $env:DB_HOST=$DbHost;$env:DB_PORT="$Port";$env:DB_NAME=$Database;$env:DB_USER=$DbUser
- & java -cp 'target/classes;lib/*' vista.DemoSelectorView
- if($LASTEXITCODE -ne 0){throw 'La aplicación terminó con un error.'}
-} finally {
- foreach($key in $keys){[Environment]::SetEnvironmentVariable($key,$before[$key],'Process')}
- Pop-Location
-}
+ & ./COMPILAR.ps1
+ if ($DbHost) {$env:DB_HOST=$DbHost}
+ if ($Port) {$env:DB_PORT="$Port"}
+ if ($Database) {$env:DB_NAME=$Database}
+ if ($DbUser) {$env:DB_USER=$DbUser}
+ & (Get-SatJavaTool 'java') -cp 'target/classes;lib/*' app.SatCarmen
+ if ($LASTEXITCODE -ne 0) {throw 'La aplicación terminó con un error.'}
+} finally {Pop-Location}

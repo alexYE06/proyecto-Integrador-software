@@ -6,7 +6,7 @@
      Campos vacios no filtran. MODO_PLACA: Contiene / Empieza en / Termina en.
      CUALQUIERA=false usa Y; true usa O. ORDEN: Fecha y hora / Placa / Conductor / Estado.
      Esta plantilla se puede abrir en Design sin conexion. Preview requiere MySQL.
-     No modifica la aplicacion Java ni conecta por si sola su boton Exportar PDF. -->
+     El boton Exportar PDF usa esta plantilla con las filas visibles de la consulta. -->
 <parameter name="DESDE" class="java.lang.String"><defaultValueExpression><![CDATA[""]]></defaultValueExpression></parameter>
 <parameter name="HASTA" class="java.lang.String"><defaultValueExpression><![CDATA[""]]></defaultValueExpression></parameter>
 <parameter name="ESTADO" class="java.lang.String"><defaultValueExpression><![CDATA[""]]></defaultValueExpression></parameter>

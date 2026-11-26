@@ -1,0 +1,243 @@
+<!-- Created with Jaspersoft Studio version 7.0.8.final using JasperReports Library version 7.0.8-6f896111  -->
+<jasperReport name="reporte_alertas_por_dia" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="NoDataSection" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="22" bottomMargin="22" uuid="3d3932db-ba90-4759-8f86-f6a55dde735b">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="sistema_alertas"/>
+	<dataset name="GraficoDiario" uuid="1e17d829-32fe-4dd7-a395-a94d79f9a60c">
+		<parameter name="FECHA_INICIO" class="java.sql.Timestamp"/>
+		<parameter name="FECHA_FIN" class="java.sql.Timestamp"/>
+		<query language="SQL"><![CDATA[SELECT DATE(a.fecha_hora) AS dia,
+                   DATE_FORMAT(DATE(a.fecha_hora), '%d/%m/%y') AS dia_etiqueta,
+                   COUNT(CASE WHEN a.estado = 'Atendida' THEN 1 END) AS atendidas,
+                   COUNT(CASE WHEN a.estado = 'Falsa Alarma' THEN 1 END) AS falsas_alarmas,
+                   COUNT(CASE WHEN a.estado IN ('Recibida', 'En Evaluación', 'Auxilio Despachado') THEN 1 END) AS abiertas
+            FROM alerta a
+            WHERE ($P{FECHA_INICIO} IS NULL OR a.fecha_hora >= $P{FECHA_INICIO})
+              AND ($P{FECHA_FIN} IS NULL OR a.fecha_hora < $P{FECHA_FIN})
+            GROUP BY DATE(a.fecha_hora), DATE_FORMAT(DATE(a.fecha_hora), '%d/%m/%y')
+            ORDER BY dia]]></query>
+		<field name="dia" class="java.sql.Date"/>
+		<field name="dia_etiqueta" class="java.lang.String"/>
+		<field name="atendidas" class="java.lang.Long"/>
+		<field name="falsas_alarmas" class="java.lang.Long"/>
+		<field name="abiertas" class="java.lang.Long"/>
+	</dataset>
+	<parameter name="FECHA_INICIO" class="java.sql.Timestamp">
+		<description><![CDATA[Fecha/hora inicial inclusiva; null significa sin límite inferior.]]></description>
+		<defaultValueExpression><![CDATA[null]]></defaultValueExpression>
+	</parameter>
+	<parameter name="FECHA_FIN" class="java.sql.Timestamp">
+		<description><![CDATA[Fecha/hora final exclusiva; null significa sin límite superior.]]></description>
+		<defaultValueExpression><![CDATA[null]]></defaultValueExpression>
+	</parameter>
+	<query language="SQL"><![CDATA[SELECT d.*,
+               SUM(d.total_alertas) OVER () AS periodo_total,
+               SUM(d.atendidas) OVER () AS periodo_atendidas,
+               SUM(d.falsas_alarmas) OVER () AS periodo_falsas_alarmas,
+               SUM(d.abiertas) OVER () AS periodo_abiertas
+        FROM (
+            SELECT DATE(a.fecha_hora) AS dia,
+                   COUNT(*) AS total_alertas,
+                   COUNT(CASE WHEN a.estado = 'Atendida' THEN 1 END) AS atendidas,
+                   COUNT(CASE WHEN a.estado = 'Falsa Alarma' THEN 1 END) AS falsas_alarmas,
+                   COUNT(CASE WHEN a.estado IN ('Recibida', 'En Evaluación', 'Auxilio Despachado') THEN 1 END) AS abiertas
+            FROM alerta a
+            WHERE ($P{FECHA_INICIO} IS NULL OR a.fecha_hora >= $P{FECHA_INICIO})
+              AND ($P{FECHA_FIN} IS NULL OR a.fecha_hora < $P{FECHA_FIN})
+            GROUP BY DATE(a.fecha_hora),
+         DATE_FORMAT(DATE(a.fecha_hora), '%d/%m/%y')
+        ) d
+        ORDER BY d.dia]]></query>
+	<field name="dia" class="java.sql.Date"/>
+	<field name="total_alertas" class="java.lang.Long"/>
+	<field name="atendidas" class="java.lang.Long"/>
+	<field name="falsas_alarmas" class="java.lang.Long"/>
+	<field name="abiertas" class="java.lang.Long"/>
+	<field name="periodo_total" class="java.math.BigDecimal"/>
+	<field name="periodo_atendidas" class="java.math.BigDecimal"/>
+	<field name="periodo_falsas_alarmas" class="java.math.BigDecimal"/>
+	<field name="periodo_abiertas" class="java.math.BigDecimal"/>
+	<group name="ResumenPeriodo">
+		<expression><![CDATA["PERIODO"]]></expression>
+		<groupHeader>
+			<band height="204" splitType="Stretch">
+				<element kind="rectangle" uuid="8f74fdc2-6fa6-44ce-9c00-706e1bd7f3bf" x="0" y="0" width="188" height="50" backcolor="#F1F5F9" mode="Opaque" radius="8">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="rectangle" uuid="78d63574-f2ae-40d5-b1a0-356f76f6c620" x="0" y="0" width="4" height="50" backcolor="#D41C3C" mode="Opaque" radius="0">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="staticText" uuid="fe9de248-398a-46be-86ed-5d56f678abf3" x="13" y="7" width="162" height="13" forecolor="#63758A" fontSize="8.0" bold="true">
+					<text><![CDATA[TOTAL DE ALERTAS]]></text>
+				</element>
+				<element kind="textField" uuid="93f1ba0e-9172-4b75-b693-538d7efc269f" x="13" y="21" width="162" height="23" forecolor="#142033" fontSize="17.0" pattern="#,##0" bold="true">
+					<expression><![CDATA[$F{periodo_total}]]></expression>
+				</element>
+				<element kind="rectangle" uuid="ac0c264e-9ec9-4004-a04f-43e72db5135e" x="199" y="0" width="188" height="50" backcolor="#F1F5F9" mode="Opaque" radius="8">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="rectangle" uuid="f8d60431-5ee2-48a1-873b-0410f7f3a724" x="199" y="0" width="4" height="50" backcolor="#27856A" mode="Opaque" radius="0">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="staticText" uuid="c62771e9-02f9-4958-bda3-46b0c286bd8d" x="212" y="7" width="162" height="13" forecolor="#63758A" fontSize="8.0" bold="true">
+					<text><![CDATA[ATENDIDAS]]></text>
+				</element>
+				<element kind="textField" uuid="e4d6ffcb-fe9f-4aaf-8b43-2baf05ca1834" x="212" y="21" width="162" height="23" forecolor="#142033" fontSize="17.0" pattern="#,##0" bold="true">
+					<expression><![CDATA[$F{periodo_atendidas}]]></expression>
+				</element>
+				<element kind="rectangle" uuid="183e333c-f3e0-4daa-ba8e-15f36040f3bb" x="398" y="0" width="188" height="50" backcolor="#F1F5F9" mode="Opaque" radius="8">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="rectangle" uuid="6c8537e5-cc41-4fca-ab9a-434c7e46df95" x="398" y="0" width="4" height="50" backcolor="#D69A22" mode="Opaque" radius="0">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="staticText" uuid="a53cac97-763c-4fe7-9a42-e46a80ae5e4b" x="411" y="7" width="162" height="13" forecolor="#63758A" fontSize="8.0" bold="true">
+					<text><![CDATA[FALSAS ALARMAS]]></text>
+				</element>
+				<element kind="textField" uuid="132d2aa6-8aad-43c1-904f-00f33c8d7172" x="411" y="21" width="162" height="23" forecolor="#142033" fontSize="17.0" pattern="#,##0" bold="true">
+					<expression><![CDATA[$F{periodo_falsas_alarmas}]]></expression>
+				</element>
+				<element kind="rectangle" uuid="c08bf9bc-b9a3-4076-a125-c34ccaea171c" x="597" y="0" width="189" height="50" backcolor="#F1F5F9" mode="Opaque" radius="8">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="rectangle" uuid="e0d8db45-b449-4d39-8f41-1fcf001d2d33" x="597" y="0" width="4" height="50" backcolor="#D41C3C" mode="Opaque" radius="0">
+					<pen lineWidth="0.0"/>
+				</element>
+				<element kind="staticText" uuid="74f6e035-aee6-4f7e-bb20-d414fad66bfe" x="610" y="7" width="164" height="13" forecolor="#63758A" fontSize="8.0" bold="true">
+					<text><![CDATA[ABIERTAS / PENDIENTES]]></text>
+				</element>
+				<element kind="textField" uuid="c8f82f57-d591-4158-b0b3-08dd5ccca142" x="610" y="21" width="164" height="23" forecolor="#142033" fontSize="17.0" pattern="#,##0" bold="true">
+					<expression><![CDATA[$F{periodo_abiertas}]]></expression>
+				</element>
+				<element kind="staticText" uuid="4d110492-3899-4761-9b1b-c8ee11f7d254" x="0" y="59" width="786" height="18" forecolor="#21344B" fontSize="10.0" bold="true" vTextAlign="Middle">
+					<text><![CDATA[TENDENCIA DIARIA POR ESTADO]]></text>
+				</element>
+				<element kind="chart" uuid="8478cb0a-59c8-46aa-88d7-1b5605f47db1" x="0" y="78" width="786" height="126" chartType="stackedBar" legendPosition="Bottom">
+					<titleFont fontSize="10.0" bold="true"/>
+					<legendFont fontSize="8.0"/>
+					<dataset kind="category">
+						<datasetRun uuid="25e12ab9-b3e5-453a-9c25-90b7bbfd97ef" subDataset="GraficoDiario">
+							<parameter name="FECHA_INICIO">
+								<expression><![CDATA[$P{FECHA_INICIO}]]></expression>
+							</parameter>
+							<parameter name="FECHA_FIN">
+								<expression><![CDATA[$P{FECHA_FIN}]]></expression>
+							</parameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<series>
+							<seriesExpression><![CDATA["Atendidas"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{dia_etiqueta}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{atendidas}]]></valueExpression>
+						</series>
+						<series>
+							<seriesExpression><![CDATA["Falsas alarmas"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{dia_etiqueta}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{falsas_alarmas}]]></valueExpression>
+						</series>
+						<series>
+							<seriesExpression><![CDATA["Abiertas"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{dia_etiqueta}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{abiertas}]]></valueExpression>
+						</series>
+					</dataset>
+					<plot showTickMarks="true" showTickLabels="true" showLabels="false">
+						<seriesColor order="0" color="#27856A"/>
+						<seriesColor order="1" color="#D69A22"/>
+						<seriesColor order="2" color="#D41C3C"/>
+						<categoryAxisLabelExpression><![CDATA["Día"]]></categoryAxisLabelExpression>
+						<categoryAxisLabelFont fontSize="8.0"/>
+						<categoryAxisTickLabelFont fontSize="8.0"/>
+						<valueAxisLabelExpression><![CDATA["Alertas"]]></valueAxisLabelExpression>
+						<valueAxisLabelFont fontSize="8.0"/>
+						<valueAxisTickLabelFont fontSize="8.0"/>
+						<itemLabel/>
+					</plot>
+				</element>
+			</band>
+		</groupHeader>
+	</group>
+	<title height="105" splitType="Stretch">
+		<element kind="rectangle" uuid="e0009129-2048-488e-9156-60ba816cceef" x="0" y="0" width="786" height="96" backcolor="#142033" mode="Opaque" radius="10">
+			<pen lineWidth="0.0"/>
+		</element>
+		<element kind="rectangle" uuid="8c051c78-7ee9-4685-a23b-47ec795f73c4" x="0" y="0" width="6" height="96" backcolor="#D41C3C" mode="Opaque" radius="0">
+			<pen lineWidth="0.0"/>
+		</element>
+		<element kind="image" uuid="c7750ae4-2952-48f3-bad2-8b5223799665" x="17" y="11" width="74" height="74" scaleImage="RetainShape" hImageAlign="Center" vImageAlign="Middle" onErrorType="Icon">
+			<expression><![CDATA[Thread.currentThread().getContextClassLoader().getResourceAsStream("reports/logo_proyecto.png")]]></expression>
+		</element>
+		<element kind="staticText" uuid="fc84dcfe-8178-4382-9b7d-e471c39490c3" x="108" y="17" width="620" height="28" forecolor="#FFFFFF" fontName="SansSerif" fontSize="19.0" bold="true" vTextAlign="Middle">
+			<text><![CDATA[REPORTE ESTADÍSTICO DE ALERTAS POR DÍA]]></text>
+		</element>
+		<element kind="staticText" uuid="2e5e3ef0-f1fe-40e2-a65e-329498bab427" x="110" y="49" width="620" height="19" forecolor="#D5DFEA" fontName="SansSerif" fontSize="10.0" vTextAlign="Middle">
+			<text><![CDATA[Análisis diario de alertas según su estado operativo]]></text>
+		</element>
+		<element kind="textField" uuid="b8206e6f-496d-432d-a4a9-d033cb4e3a78" x="110" y="72" width="620" height="15" forecolor="#FFFFFF" fontName="SansSerif" fontSize="8.0" vTextAlign="Middle">
+			<expression><![CDATA["Periodo: " + ($P{FECHA_INICIO} == null ? "sin límite inicial" : new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{FECHA_INICIO})) + "  —  " + ($P{FECHA_FIN} == null ? "sin límite final" : new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date($P{FECHA_FIN}.getTime() - 86400000L))) + "     |     Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
+		</element>
+	</title>
+	<columnHeader height="38" splitType="Stretch">
+		<element kind="rectangle" uuid="3e3b3421-4ec1-4568-a012-ce901fa7c638" x="0" y="2" width="786" height="32" backcolor="#1E3048" mode="Opaque" radius="5">
+			<pen lineWidth="0.0"/>
+		</element>
+		<element kind="staticText" uuid="14118c00-8d18-4ad2-bdfb-fafe08dc3eb3" x="14" y="8" width="200" height="19" forecolor="#FFFFFF" fontSize="9.0" bold="true" vTextAlign="Middle">
+			<text><![CDATA[DÍA]]></text>
+		</element>
+		<element kind="staticText" uuid="f9479df2-d0b2-414b-a5b0-a132f8c51a40" x="222" y="8" width="125" height="19" forecolor="#FFFFFF" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[TOTAL]]></text>
+		</element>
+		<element kind="staticText" uuid="169ca741-17a1-4a14-86a8-0aefd7f3f621" x="361" y="8" width="125" height="19" forecolor="#FFFFFF" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[ATENDIDAS]]></text>
+		</element>
+		<element kind="staticText" uuid="a2bc9a28-16fb-401a-93c9-6ea27a7e892c" x="500" y="8" width="139" height="19" forecolor="#FFFFFF" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[FALSAS ALARMAS]]></text>
+		</element>
+		<element kind="staticText" uuid="ffab4999-b5a6-4ebc-858c-b9f207f5605a" x="653" y="8" width="120" height="19" forecolor="#FFFFFF" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[ABIERTAS]]></text>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="29" splitType="Stretch">
+			<element kind="rectangle" uuid="16a4f91f-7b56-403d-8a66-ace0cacb77cb" x="0" y="1" width="786" height="26" backcolor="#F3F6F9" mode="Opaque" radius="3">
+				<printWhenExpression><![CDATA[($V{REPORT_COUNT} % 2) == 1]]></printWhenExpression>
+				<pen lineWidth="0.0"/>
+			</element>
+			<element kind="textField" uuid="c1018fb0-ce68-48a7-a5bd-b0eae485775e" x="14" y="4" width="200" height="20" forecolor="#24354A" fontSize="9.0" pattern="dd/MM/yyyy" blankWhenNull="true" vTextAlign="Middle">
+				<expression><![CDATA[$F{dia}]]></expression>
+			</element>
+			<element kind="textField" uuid="1c9b6b16-3c59-4e6e-967d-3eba75e00141" x="222" y="4" width="125" height="20" forecolor="#142033" fontSize="9.0" pattern="#,##0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{total_alertas}]]></expression>
+			</element>
+			<element kind="textField" uuid="65a5ee02-7bcf-4a0d-a56b-8759bf011e66" x="361" y="4" width="125" height="20" forecolor="#27856A" fontSize="9.0" pattern="#,##0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{atendidas}]]></expression>
+			</element>
+			<element kind="textField" uuid="97e06fca-744b-4508-b6e3-5058da2a28c1" x="500" y="4" width="139" height="20" forecolor="#A8730D" fontSize="9.0" pattern="#,##0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{falsas_alarmas}]]></expression>
+			</element>
+			<element kind="textField" uuid="1ab25daf-28b2-4ed2-9689-f3a70b0a32b5" x="653" y="4" width="120" height="20" forecolor="#C41E3A" fontSize="9.0" pattern="#,##0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{abiertas}]]></expression>
+			</element>
+		</band>
+	</detail>
+	<pageFooter height="28" splitType="Stretch">
+		<element kind="line" uuid="bf646fac-be02-48f3-93db-a69154694c1e" x="0" y="2" width="786" height="1">
+			<pen lineWidth="0.7" lineColor="#CBD5E1"/>
+		</element>
+		<element kind="staticText" uuid="5358bcb6-cfd0-4298-aed2-e4e649a4b8e4" x="0" y="8" width="360" height="15" forecolor="#64748B" fontSize="8.0" vTextAlign="Middle">
+			<text><![CDATA[Sistema de monitoreo y gestión de alertas]]></text>
+		</element>
+		<element kind="textField" uuid="b2fb27ff-fbfb-4355-825b-8b2c56236caa" x="690" y="8" width="96" height="15" forecolor="#64748B" fontSize="8.0" hTextAlign="Right" vTextAlign="Middle">
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+	</pageFooter>
+	<noData height="128">
+		<element kind="rectangle" uuid="fe8e2f30-dad4-4a67-b960-af69a332a210" x="0" y="15" width="786" height="84" backcolor="#F1F5F9" mode="Opaque" radius="9">
+			<pen lineWidth="0.0"/>
+		</element>
+		<element kind="staticText" uuid="03320d40-dc42-472c-b729-773cb74b84fb" x="24" y="30" width="738" height="25" forecolor="#21344B" fontSize="13.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[No hay alertas registradas para el periodo seleccionado.]]></text>
+		</element>
+		<element kind="staticText" uuid="c38c3d65-d074-4621-b2a9-b46e94dc43fc" x="24" y="58" width="738" height="20" forecolor="#64748B" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Modifica las fechas y vuelve a generar el reporte.]]></text>
+		</element>
+	</noData>
+</jasperReport>

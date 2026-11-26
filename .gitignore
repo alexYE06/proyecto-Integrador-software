@@ -6,3 +6,6 @@ lib/
 *.log
 demo-datos/
 *.pdf
+.local/
+.DS_Store
+__MACOSX/

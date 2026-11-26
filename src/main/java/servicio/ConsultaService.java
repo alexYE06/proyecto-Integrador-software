@@ -14,24 +14,31 @@ public class ConsultaService {
             " | Conductor contiene: "+(f.conductor().isBlank()?"todos":f.conductor())+" | Unión: "+(f.cualquiera()?"O":"Y")+
             " | Orden: "+new String[]{"Fecha","Placa","Conductor","Estado"}[f.orden()]+(f.desc()?" descendente":" ascendente");
     }
-    public static void pdf(Resultado r,Path destino) throws Exception {
-        // Se exporta la misma instantánea mostrada; no se ejecuta nuevamente SQL.
-        Path tmp=Files.createTempFile(destino.toAbsolutePath().getParent(),"consulta-",".pdf");
-        try{
-            com.lowagie.text.Document doc=new com.lowagie.text.Document(PageSize.A4.rotate(),28,28,32,32);
-            try(OutputStream out=Files.newOutputStream(tmp)){
-                PdfWriter writer=PdfWriter.getInstance(doc,out);
-                writer.setPageEvent(new PdfPageEventHelper(){public void onEndPage(PdfWriter w,com.lowagie.text.Document d){ColumnText.showTextAligned(w.getDirectContent(),Element.ALIGN_RIGHT,new Phrase("Página "+w.getPageNumber(),FontFactory.getFont(FontFactory.HELVETICA,8)),d.right(),18,0);}});
-                doc.open();
-                doc.add(new Paragraph("SAT-CARMEN | Consulta 01 de alertas",FontFactory.getFont(FontFactory.HELVETICA_BOLD,16)));
-                doc.add(new Paragraph("Emitido: "+LocalDateTime.now()+" | Registros: "+r.filas().size(),FontFactory.getFont(FontFactory.HELVETICA,9)));
-                doc.add(new Paragraph(resumen(r.filtro()),FontFactory.getFont(FontFactory.HELVETICA,9)));
-                PdfPTable tabla=new PdfPTable(new float[]{.5f,1.2f,.75f,.7f,1.7f,1.8f,1.05f}); tabla.setWidthPercentage(100);tabla.setSpacingBefore(12);tabla.setHeaderRows(1);
-                for(String c:COLUMNAS){PdfPCell cell=new PdfPCell(new Phrase(c,FontFactory.getFont(FontFactory.HELVETICA_BOLD,9)));cell.setBackgroundColor(new Color(225,233,240));cell.setPadding(5);tabla.addCell(cell);}
-                for(Object[] fila:r.filas())for(Object v:fila){PdfPCell cell=new PdfPCell(new Phrase(v==null?"":v.toString(),FontFactory.getFont(FontFactory.HELVETICA,9)));cell.setPadding(5);tabla.addCell(cell);}
-                doc.add(tabla);if(r.filas().isEmpty())doc.add(new Paragraph("Sin coincidencias para los filtros seleccionados."));doc.close();
-            }
-            Files.move(tmp,destino,StandardCopyOption.REPLACE_EXISTING);
-        }finally{Files.deleteIfExists(tmp);}
+    public static void pdf(Resultado r, Path destino) throws Exception {
+        // Jasper recibe la misma instantánea visible: no repite SQL al exportar.
+        java.util.Collection<java.util.Map<String, ?>> filas = new java.util.ArrayList<>();
+        String[] campos = {"id_alerta", "fecha_hora", "placa", "codigo_unidad", "conductor", "tipo_activacion", "estado"};
+        for (Object[] fila : r.filas()) {
+            java.util.Map<String, Object> registro = new java.util.HashMap<>();
+            for (int i = 0; i < campos.length; i++) registro.put(campos[i], fila[i]);
+            filas.add(registro);
+        }
+        Filtro f = r.filtro();
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("DESDE", f.desde()); params.put("HASTA", f.hasta());
+        params.put("ESTADO", f.estado()); params.put("PLACA", f.placa());
+        params.put("CONDUCTOR", f.conductor()); params.put("MODO_PLACA", f.modo());
+        params.put("CUALQUIERA", f.cualquiera()); params.put("DESCENDENTE", f.desc());
+        params.put("ORDEN", new String[]{"Fecha y hora", "Placa", "Conductor", "Estado"}[f.orden()]);
+        Path parent = destino.toAbsolutePath().getParent(); Files.createDirectories(parent);
+        Path tmp = Files.createTempFile(parent, "consulta01-", ".pdf");
+        try (InputStream in = ConsultaService.class.getResourceAsStream("/reports/Consulta01.jrxml")) {
+            if (in == null) throw new IllegalStateException("No se encontró Consulta01.jrxml");
+            var reporte = net.sf.jasperreports.engine.JasperCompileManager.compileReport(in);
+            var datos = new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(filas);
+            var print = net.sf.jasperreports.engine.JasperFillManager.fillReport(reporte, params, datos);
+            net.sf.jasperreports.engine.JasperExportManager.exportReportToPdfFile(print, tmp.toString());
+            Files.move(tmp, destino, StandardCopyOption.REPLACE_EXISTING);
+        } finally { Files.deleteIfExists(tmp); }
     }
 }

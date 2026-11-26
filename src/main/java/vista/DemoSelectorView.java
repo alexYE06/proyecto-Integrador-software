@@ -78,6 +78,9 @@ public class DemoSelectorView extends JFrame {
             SwingUtilities.invokeLater(() -> new LoginCentralAntiguoView().setVisible(true));
         });
 
+        JButton configurar = new JButton("Configurar MySQL");
+        configurar.addActionListener(e -> new ConfiguracionBDView(this).setVisible(true));
+        pnlSur.add(configurar);
         pnlSur.add(btnSecreto);
         add(pnlSur, BorderLayout.SOUTH);
     }
