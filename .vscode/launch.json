@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java", "name": "SAT-CARMEN (programa actualizado)",
+      "request": "launch", "mainClass": "app.SatCarmen",
+      "cwd": "${workspaceFolder}", "console": "internalConsole",
+      "preLaunchTask": "SAT: compilar", "classPaths": ["${workspaceFolder}/target/classes", "${workspaceFolder}/lib/*"]
+    },
+    {
+      "type": "java", "name": "SAT-CARMEN: configurar MySQL",
+      "request": "launch", "mainClass": "vista.ConfiguracionBDView",
+      "cwd": "${workspaceFolder}", "console": "internalConsole",
+      "preLaunchTask": "SAT: compilar", "classPaths": ["${workspaceFolder}/target/classes", "${workspaceFolder}/lib/*"]
+    }
+  ]
+}

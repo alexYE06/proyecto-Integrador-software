@@ -1,5 +1,11 @@
 # Sistema de alerta en tiempo real para optimizar la respuesta ante extorsiones en Carmen de la Punta S.A.
 
+## Inicio actualizado y presentación de semana 16
+
+Abre la carpeta completa en VS Code, selecciona **SAT-CARMEN (programa actualizado)** en Ejecutar y depurar y pulsa **F5**. Configura MySQL una sola vez desde el programa. Las consultas 01, 02 y 03 están en el menú **Consultas**. Todas exportan con JasperReports; el reporte adicional por día está en Reportes PDF.
+
+Consulta [la guía para presentar en clase](docs/PRESENTAR_EN_CLASE.md), con el orden Java → Jasper Studio → MySQL. La conexión privada se guarda en `.local/` y no se sube a GitHub. `ABRIR_PROGRAMA.cmd` también recompila antes de iniciar; ya no reutiliza una compilación antigua tras un pull.
+
 ## Proyecto Integrador I
 
 Sistema orientado al monitoreo y gestión de alertas de emergencia para apoyar la respuesta ante situaciones de extorsión que afecten a conductores y unidades de transporte.

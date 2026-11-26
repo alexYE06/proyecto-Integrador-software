@@ -1,5 +1,6 @@
 param([string]$LibDir = (Join-Path $PSScriptRoot 'lib'))
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'JAVA.ps1')
 Push-Location $PSScriptRoot
 try {
  if (!(Test-Path -LiteralPath $LibDir)) {
@@ -9,8 +10,8 @@ try {
  }
  New-Item -ItemType Directory -Force target/classes | Out-Null
  $sources=Get-ChildItem src/main/java -Recurse -Filter '*.java' | Select-Object -ExpandProperty FullName
- & javac -encoding UTF-8 --release 21 -cp "$LibDir/*" -d target/classes $sources
+ & (Get-SatJavaTool 'javac') -encoding UTF-8 --release 21 -cp "$LibDir/*" -d target/classes $sources
  if ($LASTEXITCODE -ne 0) { throw 'Falló la compilación.' }
  Copy-Item -Path src/main/resources/* -Destination target/classes -Recurse -Force
- Write-Output 'Compilación completa. Inicio: java -cp "target/classes;lib/*" vista.DemoSelectorView'
+ Write-Output 'Compilación completa. Abre SAT-CARMEN desde VS Code (F5) o ABRIR_PROGRAMA.cmd.'
 } finally { Pop-Location }

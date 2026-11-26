@@ -1,22 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
- name="Consulta03" language="java" pageWidth="842" pageHeight="595" orientation="Landscape"
- columnWidth="786" leftMargin="28" rightMargin="28" topMargin="20" bottomMargin="20" whenNoDataType="NoDataSection">
+<?xml version='1.0' encoding='UTF-8'?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Consulta03" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="786" leftMargin="28" rightMargin="28" topMargin="20" bottomMargin="20" whenNoDataType="NoDataSection">
   <subDataset name="GraficoDiario">
     <parameter name="FECHA_INICIO" class="java.sql.Timestamp"/><parameter name="FECHA_FIN" class="java.sql.Timestamp"/>
-    <queryString language="SQL"><![CDATA[
+    <queryString language="SQL">
       SELECT DATE(a.fecha_hora) dia, DATE_FORMAT(DATE(a.fecha_hora),'%d/%m') etiqueta,
        COUNT(CASE WHEN a.estado='Atendida' THEN 1 END) atendidas,
        COUNT(CASE WHEN a.estado='Falsa Alarma' THEN 1 END) falsas,
        COUNT(CASE WHEN a.estado='Auxilio Despachado' THEN 1 END) auxilio
       FROM alerta a
-      WHERE ($P{FECHA_INICIO} IS NULL OR a.fecha_hora >= $P{FECHA_INICIO})
-        AND ($P{FECHA_FIN} IS NULL OR a.fecha_hora < $P{FECHA_FIN})
+      WHERE ($P{FECHA_INICIO} IS NULL OR a.fecha_hora &gt;= $P{FECHA_INICIO})
+        AND ($P{FECHA_FIN} IS NULL OR a.fecha_hora &lt; $P{FECHA_FIN})
       GROUP BY DATE(a.fecha_hora), DATE_FORMAT(DATE(a.fecha_hora),'%d/%m')
       ORDER BY dia
-    ]]></queryString>
+    </queryString>
     <field name="dia" class="java.sql.Date"/><field name="etiqueta" class="java.lang.String"/>
     <field name="atendidas" class="java.lang.Long"/><field name="falsas" class="java.lang.Long"/><field name="auxilio" class="java.lang.Long"/>
   </subDataset>
@@ -32,17 +28,17 @@
       WHERE ($P{FECHA_INICIO} IS NULL OR a.fecha_hora >= $P{FECHA_INICIO})
         AND ($P{FECHA_FIN} IS NULL OR a.fecha_hora < $P{FECHA_FIN})
       GROUP BY b.id_bus,b.codigo_unidad,b.placa
-      ORDER BY COUNT(*) DESC,b.codigo_unidad
-    ]]></queryString>
+      ORDER BY COUNT(*) DESC,b.codigo_unidad LIMIT 10
+]]></queryString>
     <field name="id_bus" class="java.lang.Integer"/><field name="bus" class="java.lang.String"/>
     <field name="atendidas" class="java.lang.Long"/><field name="falsas" class="java.lang.Long"/><field name="auxilio" class="java.lang.Long"/>
   </subDataset>
 
-  <parameter name="FECHA_INICIO" class="java.sql.Timestamp" isForPrompting="true"><defaultValueExpression><![CDATA[null]]></defaultValueExpression></parameter>
-  <parameter name="FECHA_FIN" class="java.sql.Timestamp" isForPrompting="true"><defaultValueExpression><![CDATA[null]]></defaultValueExpression></parameter>
-  <parameter name="BASE_DATOS" class="java.lang.String"><defaultValueExpression><![CDATA["sistema_alertas"]]></defaultValueExpression></parameter>
+  <parameter name="FECHA_INICIO" class="java.sql.Timestamp" isForPrompting="true"><defaultValueExpression>null</defaultValueExpression></parameter>
+  <parameter name="FECHA_FIN" class="java.sql.Timestamp" isForPrompting="true"><defaultValueExpression>null</defaultValueExpression></parameter>
+  <parameter name="BASE_DATOS" class="java.lang.String"><defaultValueExpression>"sistema_alertas"</defaultValueExpression></parameter>
 
-  <queryString language="SQL"><![CDATA[
+  <queryString language="SQL">
     SELECT d.*,
       SUM(d.total) OVER() periodo_total,
       SUM(d.atendidas) OVER() periodo_atendidas,
@@ -54,58 +50,58 @@
        COUNT(CASE WHEN a.estado='Falsa Alarma' THEN 1 END) falsas,
        COUNT(CASE WHEN a.estado='Auxilio Despachado' THEN 1 END) auxilio
       FROM alerta a JOIN bus b ON b.id_bus=a.id_bus
-      WHERE ($P{FECHA_INICIO} IS NULL OR a.fecha_hora >= $P{FECHA_INICIO})
-        AND ($P{FECHA_FIN} IS NULL OR a.fecha_hora < $P{FECHA_FIN})
+      WHERE ($P{FECHA_INICIO} IS NULL OR a.fecha_hora &gt;= $P{FECHA_INICIO})
+        AND ($P{FECHA_FIN} IS NULL OR a.fecha_hora &lt; $P{FECHA_FIN})
       GROUP BY b.id_bus,b.codigo_unidad,b.placa
     ) d ORDER BY d.total DESC,d.codigo_unidad
-  ]]></queryString>
+  </queryString>
   <field name="id_bus" class="java.lang.Integer"/><field name="codigo_unidad" class="java.lang.String"/>
   <field name="placa" class="java.lang.String"/><field name="total" class="java.lang.Long"/>
   <field name="atendidas" class="java.lang.Long"/><field name="falsas" class="java.lang.Long"/><field name="auxilio" class="java.lang.Long"/>
   <field name="periodo_total" class="java.math.BigDecimal"/><field name="periodo_atendidas" class="java.math.BigDecimal"/>
   <field name="periodo_falsas" class="java.math.BigDecimal"/><field name="periodo_auxilio" class="java.math.BigDecimal"/>
 
-  <group name="Resumen"><groupExpression><![CDATA["TOTAL"]]></groupExpression><groupHeader>
-    <band height="196">
+  <group name="Resumen"><groupExpression>"TOTAL"</groupExpression><groupHeader>
+    <band height="246">
       <rectangle radius="6"><reportElement x="0" y="0" width="188" height="42" mode="Opaque" backcolor="#F1F5F9"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
       <staticText><reportElement x="12" y="5" width="165" height="12" forecolor="#64748B"/><textElement><font size="8" isBold="true"/></textElement><text>TOTAL DE ALERTAS</text></staticText>
-      <textField pattern="#,##0"><reportElement x="12" y="18" width="165" height="20" forecolor="#142033"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{periodo_total}]]></textFieldExpression></textField>
+      <textField pattern="#,##0"><reportElement x="12" y="18" width="165" height="20" forecolor="#142033"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression>$F{periodo_total}</textFieldExpression></textField>
       <rectangle radius="6"><reportElement x="199" y="0" width="188" height="42" mode="Opaque" backcolor="#F1F5F9"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
       <staticText><reportElement x="211" y="5" width="165" height="12" forecolor="#64748B"/><textElement><font size="8" isBold="true"/></textElement><text>ATENDIDAS</text></staticText>
-      <textField pattern="#,##0"><reportElement x="211" y="18" width="165" height="20" forecolor="#27856A"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{periodo_atendidas}]]></textFieldExpression></textField>
+      <textField pattern="#,##0"><reportElement x="211" y="18" width="165" height="20" forecolor="#27856A"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression>$F{periodo_atendidas}</textFieldExpression></textField>
       <rectangle radius="6"><reportElement x="398" y="0" width="188" height="42" mode="Opaque" backcolor="#F1F5F9"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
       <staticText><reportElement x="410" y="5" width="165" height="12" forecolor="#64748B"/><textElement><font size="8" isBold="true"/></textElement><text>FALSAS ALARMAS</text></staticText>
-      <textField pattern="#,##0"><reportElement x="410" y="18" width="165" height="20" forecolor="#A8730D"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{periodo_falsas}]]></textFieldExpression></textField>
+      <textField pattern="#,##0"><reportElement x="410" y="18" width="165" height="20" forecolor="#A8730D"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression>$F{periodo_falsas}</textFieldExpression></textField>
       <rectangle radius="6"><reportElement x="597" y="0" width="189" height="42" mode="Opaque" backcolor="#F1F5F9"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
       <staticText><reportElement x="609" y="5" width="165" height="12" forecolor="#64748B"/><textElement><font size="8" isBold="true"/></textElement><text>AUXILIO DESPACHADO</text></staticText>
-      <textField pattern="#,##0"><reportElement x="609" y="18" width="165" height="20" forecolor="#D41C3C"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{periodo_auxilio}]]></textFieldExpression></textField>
+      <textField pattern="#,##0"><reportElement x="609" y="18" width="165" height="20" forecolor="#D41C3C"/><textElement><font size="15" isBold="true"/></textElement><textFieldExpression>$F{periodo_auxilio}</textFieldExpression></textField>
 
       <staticText><reportElement x="0" y="48" width="383" height="14" forecolor="#21344B"/><textElement><font size="9" isBold="true"/></textElement><text>ALERTAS POR DÍA</text></staticText>
-      <staticText><reportElement x="403" y="48" width="383" height="14" forecolor="#21344B"/><textElement><font size="9" isBold="true"/></textElement><text>ESTADOS POR BUS</text></staticText>
+      <staticText><reportElement x="403" y="48" width="383" height="14" forecolor="#21344B"/><textElement><font size="9" isBold="true"/></textElement><text>ESTADOS POR BUS (10 CON MÁS ALERTAS)</text></staticText>
 
       <stackedBarChart>
-        <chart><reportElement x="0" y="62" width="383" height="132"/><chartLegend position="Bottom"><font size="7"/></chartLegend></chart>
+        <chart><reportElement x="0" y="62" width="383" height="182"/><chartLegend position="Bottom"><font size="7"/></chartLegend></chart>
         <categoryDataset><dataset><datasetRun subDataset="GraficoDiario">
-          <datasetParameter name="FECHA_INICIO"><datasetParameterExpression><![CDATA[$P{FECHA_INICIO}]]></datasetParameterExpression></datasetParameter>
-          <datasetParameter name="FECHA_FIN"><datasetParameterExpression><![CDATA[$P{FECHA_FIN}]]></datasetParameterExpression></datasetParameter>
-          <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+          <datasetParameter name="FECHA_INICIO"><datasetParameterExpression>$P{FECHA_INICIO}</datasetParameterExpression></datasetParameter>
+          <datasetParameter name="FECHA_FIN"><datasetParameterExpression>$P{FECHA_FIN}</datasetParameterExpression></datasetParameter>
+          <connectionExpression>$P{REPORT_CONNECTION}</connectionExpression>
         </datasetRun></dataset>
-        <categorySeries><seriesExpression><![CDATA["Atendidas"]]></seriesExpression><categoryExpression><![CDATA[$F{etiqueta}]]></categoryExpression><valueExpression><![CDATA[$F{atendidas}]]></valueExpression></categorySeries>
-        <categorySeries><seriesExpression><![CDATA["Falsa Alarma"]]></seriesExpression><categoryExpression><![CDATA[$F{etiqueta}]]></categoryExpression><valueExpression><![CDATA[$F{falsas}]]></valueExpression></categorySeries>
-        <categorySeries><seriesExpression><![CDATA["Auxilio"]]></seriesExpression><categoryExpression><![CDATA[$F{etiqueta}]]></categoryExpression><valueExpression><![CDATA[$F{auxilio}]]></valueExpression></categorySeries></categoryDataset>
-        <barPlot isShowLabels="false" isShowTickLabels="true" isShowTickMarks="true"><plot orientation="Vertical"><seriesColor seriesOrder="0" color="#27856A"/><seriesColor seriesOrder="1" color="#D69A22"/><seriesColor seriesOrder="2" color="#D41C3C"/></plot><categoryAxisFormat><axisFormat><tickLabelFont><font size="7"/></tickLabelFont></axisFormat></categoryAxisFormat><valueAxisFormat><axisFormat><tickLabelFont><font size="7"/></tickLabelFont></axisFormat></valueAxisFormat></barPlot>
+        <categorySeries><seriesExpression>"Atendidas"</seriesExpression><categoryExpression>$F{etiqueta}</categoryExpression><valueExpression>$F{atendidas}</valueExpression></categorySeries>
+        <categorySeries><seriesExpression>"Falsa Alarma"</seriesExpression><categoryExpression>$F{etiqueta}</categoryExpression><valueExpression>$F{falsas}</valueExpression></categorySeries>
+        <categorySeries><seriesExpression>"Auxilio"</seriesExpression><categoryExpression>$F{etiqueta}</categoryExpression><valueExpression>$F{auxilio}</valueExpression></categorySeries></categoryDataset>
+        <barPlot isShowLabels="false" isShowTickLabels="true" isShowTickMarks="true"><plot orientation="Vertical"><seriesColor seriesOrder="0" color="#27856A"/><seriesColor seriesOrder="1" color="#D69A22"/><seriesColor seriesOrder="2" color="#D41C3C"/></plot><categoryAxisFormat labelRotation="-45"><axisFormat><tickLabelFont><font size="7"/></tickLabelFont></axisFormat></categoryAxisFormat><valueAxisFormat><axisFormat><tickLabelFont><font size="7"/></tickLabelFont></axisFormat></valueAxisFormat></barPlot>
       </stackedBarChart>
 
       <stackedBarChart>
-        <chart><reportElement x="403" y="62" width="383" height="132"/><chartLegend position="Bottom"><font size="7"/></chartLegend></chart>
+        <chart><reportElement x="403" y="62" width="383" height="182"/><chartLegend position="Bottom"><font size="7"/></chartLegend></chart>
         <categoryDataset><dataset><datasetRun subDataset="GraficoPorBus">
-          <datasetParameter name="FECHA_INICIO"><datasetParameterExpression><![CDATA[$P{FECHA_INICIO}]]></datasetParameterExpression></datasetParameter>
-          <datasetParameter name="FECHA_FIN"><datasetParameterExpression><![CDATA[$P{FECHA_FIN}]]></datasetParameterExpression></datasetParameter>
-          <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+          <datasetParameter name="FECHA_INICIO"><datasetParameterExpression>$P{FECHA_INICIO}</datasetParameterExpression></datasetParameter>
+          <datasetParameter name="FECHA_FIN"><datasetParameterExpression>$P{FECHA_FIN}</datasetParameterExpression></datasetParameter>
+          <connectionExpression>$P{REPORT_CONNECTION}</connectionExpression>
         </datasetRun></dataset>
-        <categorySeries><seriesExpression><![CDATA["Atendidas"]]></seriesExpression><categoryExpression><![CDATA[$F{bus}]]></categoryExpression><valueExpression><![CDATA[$F{atendidas}]]></valueExpression></categorySeries>
-        <categorySeries><seriesExpression><![CDATA["Falsa Alarma"]]></seriesExpression><categoryExpression><![CDATA[$F{bus}]]></categoryExpression><valueExpression><![CDATA[$F{falsas}]]></valueExpression></categorySeries>
-        <categorySeries><seriesExpression><![CDATA["Auxilio"]]></seriesExpression><categoryExpression><![CDATA[$F{bus}]]></categoryExpression><valueExpression><![CDATA[$F{auxilio}]]></valueExpression></categorySeries></categoryDataset>
+        <categorySeries><seriesExpression>"Atendidas"</seriesExpression><categoryExpression>$F{bus}</categoryExpression><valueExpression>$F{atendidas}</valueExpression></categorySeries>
+        <categorySeries><seriesExpression>"Falsa Alarma"</seriesExpression><categoryExpression>$F{bus}</categoryExpression><valueExpression>$F{falsas}</valueExpression></categorySeries>
+        <categorySeries><seriesExpression>"Auxilio"</seriesExpression><categoryExpression>$F{bus}</categoryExpression><valueExpression>$F{auxilio}</valueExpression></categorySeries></categoryDataset>
         <barPlot isShowLabels="false" isShowTickLabels="true" isShowTickMarks="true"><plot orientation="Horizontal"><seriesColor seriesOrder="0" color="#27856A"/><seriesColor seriesOrder="1" color="#D69A22"/><seriesColor seriesOrder="2" color="#D41C3C"/></plot><categoryAxisFormat labelRotation="-20"><axisFormat><tickLabelFont><font size="6"/></tickLabelFont></axisFormat></categoryAxisFormat><valueAxisFormat><axisFormat><tickLabelFont><font size="7"/></tickLabelFont></axisFormat></valueAxisFormat></barPlot>
       </stackedBarChart>
     </band>
@@ -114,10 +110,10 @@
   <title><band height="80">
     <rectangle radius="8"><reportElement x="0" y="0" width="786" height="75" mode="Opaque" backcolor="#142033"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
     <rectangle radius="0"><reportElement x="0" y="0" width="5" height="75" mode="Opaque" backcolor="#D41C3C"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
-    <image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Icon"><reportElement x="14" y="6" width="62" height="62"/><imageExpression class="java.io.InputStream"><![CDATA[Thread.currentThread().getContextClassLoader().getResourceAsStream("reports/logo_proyecto.png")]]></imageExpression></image>
+    <image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Icon"><reportElement x="14" y="6" width="62" height="62"/><imageExpression class="java.io.InputStream">Thread.currentThread().getContextClassLoader().getResourceAsStream("reports/logo_proyecto.png")</imageExpression></image>
     <staticText><reportElement x="92" y="12" width="660" height="24" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="17" isBold="true"/></textElement><text>CONSULTA 03 · ALERTAS POR BUS</text></staticText>
     <staticText><reportElement x="94" y="38" width="650" height="15" forecolor="#D5DFEA"/><textElement verticalAlignment="Middle"><font size="9"/></textElement><text>Tendencia diaria y distribución de estados por unidad</text></staticText>
-    <textField><reportElement x="94" y="56" width="665" height="12" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["Periodo: " + ($P{FECHA_INICIO} == null ? "sin límite inicial" : new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{FECHA_INICIO})) + " — " + ($P{FECHA_FIN} == null ? "sin límite final" : new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date($P{FECHA_FIN}.getTime()-86400000L))) + " | Emitido: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression></textField>
+    <textField><reportElement x="94" y="56" width="665" height="12" forecolor="#FFFFFF"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>"Periodo: " + ($P{FECHA_INICIO} == null ? "sin límite inicial" : new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{FECHA_INICIO})) + " — " + ($P{FECHA_FIN} == null ? "sin límite final" : new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date($P{FECHA_FIN}.getTime()-86400000L))) + " | Emitido: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())</textFieldExpression></textField>
   </band></title>
 
   <columnHeader><band height="31">
@@ -130,20 +126,20 @@
     <staticText><reportElement x="665" y="5" width="115" height="18" forecolor="#FFFFFF"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text>AUXILIO</text></staticText>
   </band></columnHeader>
   <detail><band height="25" splitType="Prevent">
-    <rectangle radius="2"><reportElement x="0" y="1" width="786" height="23" mode="Opaque" backcolor="#F1F5F9"><printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 1]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
-    <textField><reportElement x="13" y="3" width="125" height="18" forecolor="#23374F"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{codigo_unidad}]]></textFieldExpression></textField>
-    <textField><reportElement x="145" y="3" width="125" height="18" forecolor="#23374F"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{placa}]]></textFieldExpression></textField>
-    <textField pattern="#,##0"><reportElement x="290" y="3" width="95" height="18" forecolor="#142033"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
-    <textField pattern="#,##0"><reportElement x="395" y="3" width="120" height="18" forecolor="#27856A"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{atendidas}]]></textFieldExpression></textField>
-    <textField pattern="#,##0"><reportElement x="525" y="3" width="130" height="18" forecolor="#A8730D"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{falsas}]]></textFieldExpression></textField>
-    <textField pattern="#,##0"><reportElement x="665" y="3" width="115" height="18" forecolor="#D41C3C"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{auxilio}]]></textFieldExpression></textField>
+    <rectangle radius="2"><reportElement x="0" y="1" width="786" height="23" mode="Opaque" backcolor="#F1F5F9"><printWhenExpression>$V{REPORT_COUNT} % 2 == 1</printWhenExpression></reportElement><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
+    <textField><reportElement x="13" y="3" width="125" height="18" forecolor="#23374F"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>$F{codigo_unidad}</textFieldExpression></textField>
+    <textField><reportElement x="145" y="3" width="125" height="18" forecolor="#23374F"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>$F{placa}</textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="290" y="3" width="95" height="18" forecolor="#142033"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><textFieldExpression>$F{total}</textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="395" y="3" width="120" height="18" forecolor="#27856A"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>$F{atendidas}</textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="525" y="3" width="130" height="18" forecolor="#A8730D"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>$F{falsas}</textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="665" y="3" width="115" height="18" forecolor="#D41C3C"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>$F{auxilio}</textFieldExpression></textField>
   </band></detail>
 
   <pageFooter><band height="23">
     <line><reportElement x="0" y="1" width="786" height="0"/><graphicElement><pen lineWidth="0.7" lineColor="#CBD5E1"/></graphicElement></line>
     <staticText><reportElement x="0" y="6" width="500" height="14" forecolor="#64748B"/><textElement verticalAlignment="Middle"><font size="8"/></textElement><text>Sistema de monitoreo y gestión de alertas</text></staticText>
-    <textField><reportElement x="650" y="6" width="92" height="14" forecolor="#64748B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER} + " de"]]></textFieldExpression></textField>
-    <textField evaluationTime="Report"><reportElement x="746" y="6" width="40" height="14" forecolor="#64748B"/><textElement textAlignment="Left" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression></textField>
+    <textField><reportElement x="650" y="6" width="92" height="14" forecolor="#64748B"/><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>"Página " + $V{PAGE_NUMBER} + " de"</textFieldExpression></textField>
+    <textField evaluationTime="Report"><reportElement x="746" y="6" width="40" height="14" forecolor="#64748B"/><textElement textAlignment="Left" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression>$V{PAGE_NUMBER}</textFieldExpression></textField>
   </band></pageFooter>
   <noData><band height="65"><staticText><reportElement x="20" y="15" width="746" height="35" forecolor="#334155"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="13" isBold="true"/></textElement><text>No hay alertas en el periodo seleccionado.</text></staticText></band></noData>
 </jasperReport>
